@@ -1,73 +1,50 @@
-# React + TypeScript + Vite
+# Jeroen Admin Dashboard 🎨
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A premium, high-fidelity admin dashboard for managing the Jeroen Recipe App ecosystem. Built with React, TypeScript, and Vite.
 
-Currently, two official plugins are available:
+## ✨ Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Recipe Management**: Standardized interface for adding, editing, and deleting recipes.
+- **User Management**: Overview and management of registered users.
+- **Advanced Search & Filtering**: Fast, debounced search and category-based filtering for 800+ recipes.
+- **Responsive Design**: Clean, modern UI optimized for desktop management.
+- **Rich Media**: Support for recipe image uploads and previews.
+- **Real-time Updates**: Powered by Redux Toolkit Query (RTK Query) for seamless data synchronization.
 
-## React Compiler
+## 🛠 Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Frontend**: React 18
+- **Build Tool**: Vite
+- **Language**: TypeScript
+- **State Management**: Redux Toolkit & RTK Query
+- **Styling**: Vanilla CSS (Custom premium design system)
+- **Icons**: Lucide React
+- **Notifications**: React Hot Toast
 
-## Expanding the ESLint configuration
+## 🚀 Getting Started
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 1. Installation
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. Configuration
+Ensure the backend is running at `http://localhost:5000` or update the `baseUrl` in `src/services/api/recipeApi.ts`.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 3. Run Development Server
+```bash
+npm run dev
 ```
+
+### 4. Build for Production
+```bash
+npm run build
+```
+
+## 🏗 Project Structure
+
+- `src/components/`: Reusable UI components (RecipeModal, RecipeTable, etc.)
+- `src/pages/`: Main page views (RecipeManagement, UserManagement)
+- `src/services/`: API services and custom hooks (RTK Query)
+- `src/store/`: Redux store configuration
+- `src/assets/`: Global styles and static assets
