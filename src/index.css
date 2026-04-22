@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+body {
+  background-color: #0F0B18; 
+  min-height: 100vh;
+  margin: 0;
+}
+
+
+@keyframes loading-slide {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+.animate-loading-bar {
+  animation: loading-slide 1.5s infinite ease-in-out;
+}
+
+
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+
+.recharts-surface > rect:first-child {
+  display: none !important;
+  fill: none !important;
+  stroke: none !important;
+}
+
+.recharts-wrapper {
+  border: none !important;
+  outline: none !important;
+}
+
+.recharts-cartesian-grid-bg {
+  fill: none !important;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
