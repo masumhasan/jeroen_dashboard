@@ -1,21 +1,27 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
+export interface RecipeNutrition {
+  kcal: number | null;
+  khd: number | null;
+  vetten: number | null;
+  eiwitten: number | null;
+  vezels: number | null;
+}
+
 export interface Recipe {
   _id?: string;
-  Number: number;
-  Name: string;
-  Category: string;
-  Recipe_Details: string[];
-  Ingredients: string[];
-  Cooking_TIP: string | null;
-  Persons_Serving: string;
-  KCAL: string;
-  KHD: string;
-  VETTEN: string;
-  EIWITTEN: string;
-  VEZELS: string | null;
-  book_number: number;
-  recipe_image?: string;
+  number: number;
+  name: string;
+  category: string;
+  recipeDetails: string[];
+  ingredients: string[];
+  cookingTip: string | null;
+  personsServing: number | null;
+  nutrition: RecipeNutrition;
+  book: number;
+  recipeImage?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface GetRecipesResponse {
@@ -34,12 +40,13 @@ export const recipeApi = createApi({
   endpoints: (builder) => ({
     getRecipes: builder.query<
       GetRecipesResponse,
-      { search?: string; category?: string; page?: number }
+      { search?: string; category?: string; book?: number; page?: number }
     >({
-      query: ({ search, category, page = 1 }) => {
+      query: ({ search, category, book, page = 1 }) => {
         let url = `/recipes?page=${page}`;
-        if (search) url += `&search=${search}`;
-        if (category && category !== "All") url += `&category=${category}`;
+        if (search) url += `&search=${encodeURIComponent(search)}`;
+        if (category && category !== "All") url += `&category=${encodeURIComponent(category)}`;
+        if (book) url += `&book=${book}`;
         return url;
       },
       providesTags: ["Recipe"],

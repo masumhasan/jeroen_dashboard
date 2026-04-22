@@ -1,20 +1,28 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useGetRecipesQuery } from "../api/recipeApi";
 
 export const useGetRecipeManagement = () => {
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [category, setCategory] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+      setCurrentPage(1);
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [search]);
+
   const { data, isLoading, isFetching } = useGetRecipesQuery({
-    search,
+    search: debouncedSearch,
     category,
     page: currentPage,
   });
 
   const onSearchChange = (val: string) => {
     setSearch(val);
-    setCurrentPage(1);
   };
 
   const onCategoryChange = (val: string) => {

@@ -34,6 +34,8 @@ const RecipeTable: React.FC<RecipeTableProps> = ({ data, currentPage, pageSize =
     }
   };
 
+  const formatMacro = (val: number | null | undefined) => val ?? "–";
+
   return (
     <div
       className="rounded-2xl overflow-hidden"
@@ -81,15 +83,15 @@ const RecipeTable: React.FC<RecipeTableProps> = ({ data, currentPage, pageSize =
                   >
                     <td className="py-3.5 px-4">
                       <span className="text-xs font-medium" style={{ color: "#000" }}>
-                        {recipe.Number || globalIndex + 1}
+                        {recipe.number || globalIndex + 1}
                       </span>
                     </td>
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-3">
-                        {recipe.recipe_image ? (
+                        {recipe.recipeImage ? (
                           <img
-                            src={`http://localhost:5000${recipe.recipe_image}`}
-                            alt={recipe.Name}
+                            src={recipe.recipeImage.startsWith("http") ? recipe.recipeImage : `http://localhost:5000${recipe.recipeImage}`}
+                            alt={recipe.name}
                             className="w-12 h-12 rounded-lg object-cover"
                           />
                         ) : (
@@ -98,30 +100,30 @@ const RecipeTable: React.FC<RecipeTableProps> = ({ data, currentPage, pageSize =
                           </div>
                         )}
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold text-black truncate">{recipe.Name}</p>
+                          <p className="text-sm font-semibold text-black truncate">{recipe.name}</p>
                           <p className="text-[11px]" style={{ color: "#555" }}>
-                            Serving: {recipe.Persons_Serving}
+                            Serving: {recipe.personsServing ?? "–"}
                           </p>
                         </div>
                       </div>
                     </td>
                     <td className="py-3.5 px-4">
                       <span className="text-xs px-2 py-1 rounded-full bg-[#89957F]/10 text-[#89957F] font-bold">
-                        {recipe.Category}
+                        {recipe.category}
                       </span>
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className="text-sm font-medium">Book {recipe.book_number}</span>
+                      <span className="text-sm font-medium">Book {recipe.book}</span>
                     </td>
                     <td className="py-3.5 px-4">
                       <div className="text-xs space-x-1">
-                        <span className="font-bold">{recipe.KCAL}</span>
+                        <span className="font-bold">{formatMacro(recipe.nutrition?.kcal)}</span>
                         <span className="text-gray-400">/</span>
-                        <span className="font-bold">{recipe.KHD}</span>
+                        <span className="font-bold">{formatMacro(recipe.nutrition?.khd)}</span>
                         <span className="text-gray-400">/</span>
-                        <span className="font-bold">{recipe.VETTEN}</span>
+                        <span className="font-bold">{formatMacro(recipe.nutrition?.vetten)}</span>
                         <span className="text-gray-400">/</span>
-                        <span className="font-bold">{recipe.EIWITTEN}</span>
+                        <span className="font-bold">{formatMacro(recipe.nutrition?.eiwitten)}</span>
                       </div>
                     </td>
                     <td className="py-3.5 px-4">

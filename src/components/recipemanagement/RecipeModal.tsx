@@ -14,19 +14,15 @@ const RecipeModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
   const [updateRecipe, { isLoading: isUpdating }] = useUpdateRecipeMutation();
 
   const [formData, setFormData] = useState<Partial<Recipe>>({
-    Name: "",
-    Category: "Ontbijt",
-    Recipe_Details: [""],
-    Ingredients: [""],
-    Cooking_TIP: "",
-    Persons_Serving: "1",
-    KCAL: "0",
-    KHD: "0",
-    VETTEN: "0",
-    EIWITTEN: "0",
-    VEZELS: "0",
-    book_number: 1,
-    Number: 1,
+    name: "",
+    category: "Ontbijt",
+    recipeDetails: [""],
+    ingredients: [""],
+    cookingTip: "",
+    personsServing: 1,
+    nutrition: { kcal: 0, khd: 0, vetten: 0, eiwitten: 0, vezels: 0 },
+    book: 1,
+    number: 1,
   });
 
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -35,8 +31,12 @@ const RecipeModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
   useEffect(() => {
     if (recipe) {
       setFormData(recipe);
-      if (recipe.recipe_image) {
-        setImagePreview(`http://localhost:5000${recipe.recipe_image}`);
+      if (recipe.recipeImage) {
+        setImagePreview(
+          recipe.recipeImage.startsWith("http")
+            ? recipe.recipeImage
+            : `http://localhost:5000${recipe.recipeImage}`
+        );
       }
     }
   }, [recipe]);
@@ -46,17 +46,25 @@ const RecipeModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleArrayChange = (index: number, value: string, field: "Recipe_Details" | "Ingredients") => {
+  const handleNutritionChange = (field: string, value: string) => {
+    const num = value === "" ? null : parseFloat(value);
+    setFormData((prev) => ({
+      ...prev,
+      nutrition: { ...prev.nutrition!, [field]: isNaN(num as number) ? null : num },
+    }));
+  };
+
+  const handleArrayChange = (index: number, value: string, field: "recipeDetails" | "ingredients") => {
     const newArray = [...(formData[field] || [])];
     newArray[index] = value;
     setFormData((prev) => ({ ...prev, [field]: newArray }));
   };
 
-  const addArrayItem = (field: "Recipe_Details" | "Ingredients") => {
+  const addArrayItem = (field: "recipeDetails" | "ingredients") => {
     setFormData((prev) => ({ ...prev, [field]: [...(prev[field] || []), ""] }));
   };
 
-  const removeArrayItem = (index: number, field: "Recipe_Details" | "Ingredients") => {
+  const removeArrayItem = (index: number, field: "recipeDetails" | "ingredients") => {
     const newArray = [...(formData[field] || [])];
     newArray.splice(index, 1);
     setFormData((prev) => ({ ...prev, [field]: newArray }));
@@ -94,6 +102,14 @@ const RecipeModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
     }
   };
 
+  const macroFields = [
+    { key: "kcal", label: "KCAL" },
+    { key: "khd", label: "KHD" },
+    { key: "vetten", label: "VETTEN" },
+    { key: "eiwitten", label: "EIWITTEN" },
+    { key: "vezels", label: "VEZELS" },
+  ];
+
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
       <div className="bg-white rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
@@ -113,8 +129,8 @@ const RecipeModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
               <div>
                 <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1 block">Recipe Name</label>
                 <input
-                  name="Name"
-                  value={formData.Name}
+                  name="name"
+                  value={formData.name}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2.5 rounded-xl border border-gray-100 bg-gray-50 focus:ring-2 focus:ring-[#89957F]/20 outline-none text-sm font-medium"
                   required
@@ -124,8 +140,8 @@ const RecipeModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
                 <div>
                   <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1 block">Category</label>
                   <select
-                    name="Category"
-                    value={formData.Category}
+                    name="category"
+                    value={formData.category}
                     onChange={handleInputChange}
                     className="w-full px-4 py-2.5 rounded-xl border border-gray-100 bg-gray-50 focus:ring-2 focus:ring-[#89957F]/20 outline-none text-sm font-medium"
                   >
@@ -141,8 +157,8 @@ const RecipeModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
                   <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1 block">Book Number</label>
                   <input
                     type="number"
-                    name="book_number"
-                    value={formData.book_number}
+                    name="book"
+                    value={formData.book}
                     onChange={handleInputChange}
                     className="w-full px-4 py-2.5 rounded-xl border border-gray-100 bg-gray-50 focus:ring-2 focus:ring-[#89957F]/20 outline-none text-sm font-medium"
                   />
@@ -153,8 +169,8 @@ const RecipeModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
                   <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1 block">Recipe Number</label>
                   <input
                     type="number"
-                    name="Number"
-                    value={formData.Number}
+                    name="number"
+                    value={formData.number}
                     onChange={handleInputChange}
                     className="w-full px-4 py-2.5 rounded-xl border border-gray-100 bg-gray-50 focus:ring-2 focus:ring-[#89957F]/20 outline-none text-sm font-medium"
                   />
@@ -162,12 +178,25 @@ const RecipeModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
                 <div>
                   <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1 block">Persons Serving</label>
                   <input
-                    name="Persons_Serving"
-                    value={formData.Persons_Serving}
+                    type="number"
+                    name="personsServing"
+                    value={formData.personsServing ?? ""}
                     onChange={handleInputChange}
                     className="w-full px-4 py-2.5 rounded-xl border border-gray-100 bg-gray-50 focus:ring-2 focus:ring-[#89957F]/20 outline-none text-sm font-medium"
                   />
                 </div>
+              </div>
+
+              {/* Cooking Tip */}
+              <div>
+                <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1 block">Cooking Tip</label>
+                <textarea
+                  name="cookingTip"
+                  value={formData.cookingTip ?? ""}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2.5 rounded-xl border border-gray-100 bg-gray-50 focus:ring-2 focus:ring-[#89957F]/20 outline-none text-sm font-medium resize-none"
+                  rows={2}
+                />
               </div>
 
               {/* Image Upload */}
@@ -197,18 +226,17 @@ const RecipeModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
               </div>
             </div>
 
-            {/* Right Column: Ingredients & Details */}
+            {/* Right Column: Macros, Ingredients & Steps */}
             <div className="space-y-4">
-               <div>
+              <div>
                 <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1 block">Macros</label>
                 <div className="grid grid-cols-5 gap-2">
-                  {["KCAL", "KHD", "VETTEN", "EIWITTEN", "VEZELS"].map((field) => (
-                    <div key={field}>
-                      <label className="text-[8px] font-bold text-gray-400 block text-center mb-1">{field}</label>
+                  {macroFields.map(({ key, label }) => (
+                    <div key={key}>
+                      <label className="text-[8px] font-bold text-gray-400 block text-center mb-1">{label}</label>
                       <input
-                        name={field}
-                        value={(formData as any)[field] || ""}
-                        onChange={handleInputChange}
+                        value={formData.nutrition?.[key as keyof typeof formData.nutrition] ?? ""}
+                        onChange={(e) => handleNutritionChange(key, e.target.value)}
                         className="w-full px-2 py-2 rounded-lg border border-gray-100 bg-gray-50 text-center text-xs font-bold"
                       />
                     </div>
@@ -219,19 +247,19 @@ const RecipeModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Ingredients</label>
-                  <button type="button" onClick={() => addArrayItem("Ingredients")} className="text-[#89957F] hover:scale-110 transition-transform">
+                  <button type="button" onClick={() => addArrayItem("ingredients")} className="text-[#89957F] hover:scale-110 transition-transform">
                     <Plus size={16} />
                   </button>
                 </div>
                 <div className="space-y-2 max-h-32 overflow-y-auto pr-2 custom-scrollbar">
-                  {formData.Ingredients?.map((ing, idx) => (
+                  {formData.ingredients?.map((ing, idx) => (
                     <div key={idx} className="flex gap-2">
                       <input
                         value={ing}
-                        onChange={(e) => handleArrayChange(idx, e.target.value, "Ingredients")}
+                        onChange={(e) => handleArrayChange(idx, e.target.value, "ingredients")}
                         className="flex-1 px-3 py-1.5 rounded-lg border border-gray-100 bg-gray-50 text-xs"
                       />
-                      <button type="button" onClick={() => removeArrayItem(idx, "Ingredients")} className="text-red-400">
+                      <button type="button" onClick={() => removeArrayItem(idx, "ingredients")} className="text-red-400">
                         <Minus size={14} />
                       </button>
                     </div>
@@ -242,20 +270,20 @@ const RecipeModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Recipe Steps</label>
-                  <button type="button" onClick={() => addArrayItem("Recipe_Details")} className="text-[#89957F] hover:scale-110 transition-transform">
+                  <button type="button" onClick={() => addArrayItem("recipeDetails")} className="text-[#89957F] hover:scale-110 transition-transform">
                     <Plus size={16} />
                   </button>
                 </div>
                 <div className="space-y-2 max-h-32 overflow-y-auto pr-2 custom-scrollbar">
-                  {formData.Recipe_Details?.map((step, idx) => (
+                  {formData.recipeDetails?.map((step, idx) => (
                     <div key={idx} className="flex gap-2">
                       <textarea
                         value={step}
-                        onChange={(e) => handleArrayChange(idx, e.target.value, "Recipe_Details")}
+                        onChange={(e) => handleArrayChange(idx, e.target.value, "recipeDetails")}
                         className="flex-1 px-3 py-1.5 rounded-lg border border-gray-100 bg-gray-50 text-xs resize-none"
                         rows={2}
                       />
-                      <button type="button" onClick={() => removeArrayItem(idx, "Recipe_Details")} className="text-red-400">
+                      <button type="button" onClick={() => removeArrayItem(idx, "recipeDetails")} className="text-red-400">
                         <Minus size={14} />
                       </button>
                     </div>
