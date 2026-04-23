@@ -4,12 +4,11 @@ import type { ManagedUserRaw } from "../api/usermanagementApi";
 import type { ManagedUser } from "./useGetUserManagement";
 
 const mapUser = (u: ManagedUserRaw, index: number): ManagedUser => ({
-  id: index + 1,
+  id: (u as any).id ?? index + 1,
   name: u.fullName,
   email: u.email,
   phone: u.mobileNumber,
   avatar: u.profilePicture,
-  location: u.location ?? "",
   joined: u.Joined,
   status: u.status === "Active" ? "active" : "suspended",
 });

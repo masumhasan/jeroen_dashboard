@@ -1,5 +1,5 @@
 import React from "react";
-import type { FilterTab } from "@/services/hooks/useGetUserManagement";
+type FilterTab = "all" | "active" | "suspended";
 
 interface UserFilterTabsProps {
   active: FilterTab;

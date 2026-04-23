@@ -1,6 +1,7 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
 import type { ManagedUser, UserStatus } from "./useGetUserManagement";
+import { useUpdateUserStatusMutation } from "../api/usermanagementApi";
 
 export type ActionType = "block" | "unblock" | null;
 
@@ -14,6 +15,7 @@ const useUserActions = ({ updateUserStatus }: UseUserActionsProps) => {
     action: ActionType;
   } | null>(null);
   const [isActing, setIsActing] = useState(false);
+  const [updateStatus] = useUpdateUserStatusMutation();
 
   const openConfirm = (user: ManagedUser, action: ActionType) =>
     setConfirmTarget({ user, action });
@@ -23,23 +25,27 @@ const useUserActions = ({ updateUserStatus }: UseUserActionsProps) => {
   const handleConfirm = async () => {
     if (!confirmTarget) return;
     setIsActing(true);
+    try {
+      const newStatus: UserStatus =
+        confirmTarget.action === "block" ? "suspended" : "active";
 
-    // TODO: replace with real API call
-    await new Promise((res) => setTimeout(res, 800));
+      await updateStatus({
+        userId: String(confirmTarget.user.id),
+        status: newStatus,
+      }).unwrap();
+      updateUserStatus(confirmTarget.user.id, newStatus);
 
-    const newStatus: UserStatus =
-      confirmTarget.action === "block" ? "suspended" : "active";
-
-    updateUserStatus(confirmTarget.user.id, newStatus);
-
-    toast.success(
-      confirmTarget.action === "block"
-        ? `${confirmTarget.user.name} has been suspended.`
-        : `${confirmTarget.user.name} has been unblocked.`,
-    );
-
-    setIsActing(false);
-    setConfirmTarget(null);
+      toast.success(
+        confirmTarget.action === "block"
+          ? `${confirmTarget.user.name} has been suspended.`
+          : `${confirmTarget.user.name} has been unblocked.`,
+      );
+      setConfirmTarget(null);
+    } catch (_error) {
+      toast.error("Failed to update user status");
+    } finally {
+      setIsActing(false);
+    }
   };
 
   return { confirmTarget, openConfirm, closeConfirm, handleConfirm, isActing };

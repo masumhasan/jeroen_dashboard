@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import UserSearchBar from "@/components/usermanagement/UserSearchBar";
-import UserFilterTabs from "@/components/usermanagement/UserFilterTabs";
 import UserManagementTable from "@/components/usermanagement/UserManagementTable";
 import UserPagination from "@/components/shared/UserPagination";
 import UserManagementSkeleton from "@/components/Skeletons/UserManagementSkeleton";
@@ -12,14 +11,14 @@ export default function UserManagementPage() {
   const {
     isLoading,
     isFetching,
+    isError,
+    error,
     search,
-    filter,
     currentPage,
     totalPages,
     totalResults,
     users,
     onSearchChange,
-    onFilterChange,
     onPageChange,
     updateUserStatus,
   } = useGetUserManagement();
@@ -75,10 +74,18 @@ export default function UserManagementPage() {
         </div>
       </div>
 
+      {isError && (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          Failed to load users from API. Check dashboard API URL and backend server.
+          <span className="block mt-1 text-xs opacity-80">
+            {JSON.stringify(error)}
+          </span>
+        </div>
+      )}
+
       {/* Toolbar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <UserSearchBar value={search} onChange={onSearchChange} />
-        <UserFilterTabs active={filter} onChange={onFilterChange} />
       </div>
 
       {/* Table */}

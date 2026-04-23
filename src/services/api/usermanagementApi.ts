@@ -1,6 +1,7 @@
 import { baseApi } from "./baseApi";
 
 export interface ManagedUserRaw {
+  id?: string;
   fullName: string;
   email: string;
   mobileNumber: string;
@@ -29,14 +30,14 @@ export interface UserManagementResponse {
 export interface GetUsersParams {
   page?: number;
   limit?: number;
-  status?: "active" | "inactive" | "all";
+  status?: "active" | "suspended" | "all";
   search?: string;
 }
 
 export const userManagementApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getUsers: builder.query<UserManagementResponse, GetUsersParams>({
-      query: ({ page = 2, limit = 10, status, search }) => {
+      query: ({ page = 1, limit = 10, status, search }) => {
         const params = new URLSearchParams();
         params.set("page", String(page));
         params.set("limit", String(limit));
@@ -45,8 +46,18 @@ export const userManagementApi = baseApi.injectEndpoints({
         return `/admin/users?${params.toString()}`;
       },
     }),
+    updateUserStatus: builder.mutation<
+      { success: boolean; message: string; data: { id: string; status: "Active" | "Inactive" } },
+      { userId: string; status: "active" | "suspended" }
+    >({
+      query: ({ userId, status }) => ({
+        url: `/admin/users/${userId}/status`,
+        method: "PATCH",
+        body: { status },
+      }),
+    }),
   }),
   overrideExisting: false,
 });
 
-export const { useGetUsersQuery } = userManagementApi;
+export const { useGetUsersQuery, useUpdateUserStatusMutation } = userManagementApi;

@@ -2,7 +2,6 @@ import React from "react";
 import { ShieldOff, ShieldCheck } from "lucide-react";
 import type { ManagedUser } from "@/services/hooks/useGetUserManagement";
 import type { ActionType } from "@/services/hooks/useUserAction";
-import StatusBadge from "@/components/shared/StatusBadge";
 import UserActionModal from "@/components/shared/UserActionModal";
 
 interface UserManagementTableProps {
@@ -108,9 +107,7 @@ const UserManagementTable: React.FC<UserManagementTableProps> = ({
                 <Th width="48px">#</Th>
                 <Th width="220px">User</Th>
                 <Th>Phone Number</Th>
-                <Th>Location</Th>
                 <Th>Joined</Th>
-                <Th>Status</Th>
                 <Th>Actions</Th>
               </tr>
             </thead>
@@ -118,7 +115,7 @@ const UserManagementTable: React.FC<UserManagementTableProps> = ({
               {data.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={5}
                     className="py-16 text-center text-sm"
                     style={{ color: "#000" }}
                   >
@@ -182,18 +179,8 @@ const UserManagementTable: React.FC<UserManagementTableProps> = ({
 
                       <td className="py-3.5 px-4">
                         <span className="text-sm" style={{ color: "#000" }}>
-                          {user.location}
-                        </span>
-                      </td>
-
-                      <td className="py-3.5 px-4">
-                        <span className="text-sm" style={{ color: "#000" }}>
                           {user.joined}
                         </span>
-                      </td>
-
-                      <td className="py-3.5 px-4">
-                        <StatusBadge status={user.status} />
                       </td>
 
                       <td className="py-3.5 px-4">
