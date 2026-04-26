@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect } from "react";
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { API_BASE_URL } from "@/config/apiConfig";
 
 export interface InboxContact {
   id: string | number;
@@ -16,177 +17,143 @@ export interface InboxMessage {
   text: string;
   time: string;
   isAdmin: boolean;
+  imageUrl?: string | null;
 }
 
-const DUMMY_CONTACTS: InboxContact[] = [
-  {
-    id: 1,
-    name: "Sarah Johnson",
-    avatar: "",
-    lastMessage: "Hi Admin",
-    lastTime: "2025-01-15 02:12am",
-    unread: 2,
-    online: true,
-  },
-  {
-    id: 2,
-    name: "Dov Johnson",
-    avatar: "",
-    lastMessage: "Hello there!",
-    lastTime: "2025-01-14 10:30am",
-    unread: 0,
-    online: false,
-  },
-  {
-    id: 3,
-    name: "Alice Martinez",
-    avatar: "",
-    lastMessage: "Can you help me?",
-    lastTime: "2025-01-14 09:15am",
-    unread: 1,
-    online: true,
-  },
-  {
-    id: 4,
-    name: "Bob Williams",
-    avatar: "",
-    lastMessage: "Thank you!",
-    lastTime: "2025-01-13 04:45pm",
-    unread: 0,
-    online: false,
-  },
-  {
-    id: 5,
-    name: "Carol Smith",
-    avatar: "",
-    lastMessage: "Got it, thanks.",
-    lastTime: "2025-01-12 11:20am",
-    unread: 0,
-    online: false,
-  },
-];
-
-const DUMMY_MESSAGES: Record<string | number, InboxMessage[]> = {
-  1: [
-    {
-      id: 1,
-      senderId: 1,
-      text: "Hi Admin",
-      time: "2025-01-15 02:10am",
-      isAdmin: false,
-    },
-    {
-      id: 2,
-      senderId: "admin",
-      text: "How Can I Help You.",
-      time: "2025-01-15 02:12am",
-      isAdmin: true,
-    },
-  ],
-  2: [
-    {
-      id: 1,
-      senderId: 2,
-      text: "Hello there!",
-      time: "2025-01-14 10:30am",
-      isAdmin: false,
-    },
-  ],
-  3: [
-    {
-      id: 1,
-      senderId: 3,
-      text: "Can you help me?",
-      time: "2025-01-14 09:15am",
-      isAdmin: false,
-    },
-  ],
-  4: [
-    {
-      id: 1,
-      senderId: 4,
-      text: "Thank you!",
-      time: "2025-01-13 04:45pm",
-      isAdmin: false,
-    },
-  ],
-  5: [
-    {
-      id: 1,
-      senderId: 5,
-      text: "Got it, thanks.",
-      time: "2025-01-12 11:20am",
-      isAdmin: false,
-    },
-  ],
-};
-
 export function useInbox() {
-  const [contacts, setContacts] = useState<InboxContact[]>(DUMMY_CONTACTS);
-  const [selectedId, setSelectedId] = useState<string | number | null>(1);
-  const [messages, setMessages] =
-    useState<Record<string | number, InboxMessage[]>>(DUMMY_MESSAGES);
+  const [rawContacts, setRawContacts] = useState<InboxContact[]>([]);
+  const [messagesByThread, setMessagesByThread] = useState<
+    Record<string, InboxMessage[]>
+  >({});
+  const [selectedId, setSelectedId] = useState<string | number | null>(null);
+  const [loadingList, setLoadingList] = useState(true);
+  const [loadingMessages, setLoadingMessages] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [inputText, setInputText] = useState("");
   const [search, setSearch] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const selectedContact = contacts.find((c) => c.id === selectedId) ?? null;
-  const currentMessages = selectedId ? (messages[selectedId] ?? []) : [];
+  const loadThreads = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/support/threads`);
+      if (!res.ok) throw new Error(`Could not load conversations (${res.status})`);
+      const json = await res.json();
+      const threads: InboxContact[] = json?.data?.threads ?? [];
+      setRawContacts(threads);
+      setLoadError(null);
+    } catch (e) {
+      setLoadError((e as Error).message);
+    } finally {
+      setLoadingList(false);
+    }
+  }, []);
 
-  const filteredContacts = contacts.filter((c) =>
-    c.name.toLowerCase().includes(search.toLowerCase()),
-  );
+  const loadMessages = useCallback(async (threadId: string) => {
+    setLoadingMessages(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/support/threads/${threadId}`);
+      if (!res.ok) throw new Error("Could not load messages");
+      const json = await res.json();
+      const msgs: InboxMessage[] = json?.data?.messages ?? [];
+      setMessagesByThread((prev) => ({ ...prev, [threadId]: msgs }));
+    } catch {
+      // leave existing messages
+    } finally {
+      setLoadingMessages(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadThreads();
+    const t = setInterval(() => void loadThreads(), 12000);
+    return () => clearInterval(t);
+  }, [loadThreads]);
+
+  useEffect(() => {
+    if (selectedId == null) return;
+    const sid = String(selectedId);
+    void loadMessages(sid);
+    const t = setInterval(() => void loadMessages(sid), 10000);
+    return () => clearInterval(t);
+  }, [selectedId, loadMessages]);
+
+  useEffect(() => {
+    if (rawContacts.length === 0) return;
+    setSelectedId((prev) => {
+      if (prev == null) return rawContacts[0].id;
+      const exists = rawContacts.some((c) => String(c.id) === String(prev));
+      return exists ? prev : rawContacts[0].id;
+    });
+  }, [rawContacts]);
+
+  const markRead = useCallback(async (threadId: string) => {
+    try {
+      await fetch(`${API_BASE_URL}/admin/support/threads/${threadId}/read`, {
+        method: "PATCH",
+      });
+      setRawContacts((prev) =>
+        prev.map((c) =>
+          String(c.id) === String(threadId) ? { ...c, unread: 0 } : c
+        )
+      );
+    } catch {
+      // ignore
+    }
+  }, []);
 
   const selectContact = (id: string | number) => {
     setSelectedId(id);
-    // Mark as read
-    setContacts((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, unread: 0 } : c)),
-    );
+    void markRead(String(id));
   };
 
-  const sendMessage = () => {
+  const selectedContact =
+    rawContacts.find((c) => String(c.id) === String(selectedId)) ?? null;
+  const currentMessages =
+    selectedId != null ? messagesByThread[String(selectedId)] ?? [] : [];
+
+  const filteredContacts = rawContacts.filter((c) =>
+    c.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const sendMessage = async () => {
     const text = inputText.trim();
-    if (!text || !selectedId) return;
-
-    const now = new Date();
-    const timeStr = now.toLocaleString("en-US", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-
-    const newMsg: InboxMessage = {
-      id: Date.now(),
-      senderId: "admin",
-      text,
-      time: timeStr,
-      isAdmin: true,
-    };
-
-    setMessages((prev) => ({
-      ...prev,
-      [selectedId]: [...(prev[selectedId] ?? []), newMsg],
-    }));
-
-    setContacts((prev) =>
-      prev.map((c) =>
-        c.id === selectedId
-          ? { ...c, lastMessage: text, lastTime: timeStr }
-          : c,
-      ),
-    );
-
-    setInputText("");
+    if (!text || selectedId == null) return;
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/admin/support/threads/${selectedId}/replies`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ body: text }),
+        }
+      );
+      if (!res.ok) throw new Error("Send failed");
+      const json = await res.json();
+      const newMsg: InboxMessage | undefined = json?.data?.message;
+      if (newMsg) {
+        setMessagesByThread((prev) => ({
+          ...prev,
+          [String(selectedId)]: [...(prev[String(selectedId)] ?? []), newMsg],
+        }));
+        setRawContacts((prev) =>
+          prev.map((c) =>
+            String(c.id) === String(selectedId)
+              ? { ...c, lastMessage: text, lastTime: newMsg.time }
+              : c
+          )
+        );
+      }
+      setInputText("");
+      void loadThreads();
+    } catch {
+      // optional: toast
+    }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      sendMessage();
+      void sendMessage();
     }
   };
 
@@ -196,9 +163,13 @@ export function useInbox() {
 
   return {
     contacts: filteredContacts,
+    totalConversationCount: rawContacts.length,
     selectedId,
     selectedContact,
     currentMessages,
+    loadingList,
+    loadingMessages,
+    loadError,
     inputText,
     search,
     messagesEndRef,
@@ -207,5 +178,6 @@ export function useInbox() {
     selectContact,
     sendMessage,
     handleKeyDown,
+    reloadThreads: loadThreads,
   };
 }

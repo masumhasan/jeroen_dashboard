@@ -198,7 +198,7 @@ export default function Sidebar({
       icon: Tags,
       path: "/dashboard/topic-management",
     },
-    { label: "Inbox", icon: Inbox, path: "/dashboard/inbox" },
+    { label: "Support Inbox", icon: Inbox, path: "/dashboard/inbox" },
   ];
 
   const settingsNav = [

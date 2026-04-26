@@ -4,9 +4,13 @@ import InboxChatWindow from "@/components/inbox/InboxChatWindow";
 export default function InboxPage() {
   const {
     contacts,
+    totalConversationCount,
     selectedId,
     selectedContact,
     currentMessages,
+    loadingList,
+    loadingMessages,
+    loadError,
     inputText,
     search,
     messagesEndRef,
@@ -21,13 +25,16 @@ export default function InboxPage() {
     <div className="min-h-screen p-6" style={{ background: "#fff" }}>
       {/* Header */}
       <div className="mb-5">
-        <h1 className="text-xl font-black tracking-tight text-black">Inbox</h1>
+        <h1 className="text-xl font-black tracking-tight text-black">Support Inbox</h1>
         <p
           className="text-[11px] mt-0.5 font-medium uppercase tracking-[0.15em]"
           style={{ color: "#888" }}
         >
-          {contacts.length} conversations
+          {totalConversationCount} conversations
         </p>
+        {loadError ? (
+          <p className="text-sm text-red-600 mt-2">{loadError}</p>
+        ) : null}
       </div>
 
       {/* Chat card */}
@@ -51,7 +58,12 @@ export default function InboxPage() {
         />
 
         {/* Left — contact list */}
-        <div className="w-72 shrink-0 flex flex-col h-full">
+        <div className="w-72 shrink-0 flex flex-col h-full relative">
+          {loadingList ? (
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/80">
+              <span className="text-sm text-gray-500">Loading…</span>
+            </div>
+          ) : null}
           <InboxContactList
             contacts={contacts}
             selectedId={selectedId}
@@ -62,7 +74,12 @@ export default function InboxPage() {
         </div>
 
         {/* Right — chat window */}
-        <div className="flex-1 flex flex-col min-h-0 min-w-0">
+        <div className="flex-1 flex flex-col min-h-0 min-w-0 relative">
+          {loadingMessages && selectedContact ? (
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/60 pointer-events-none">
+              <span className="text-sm text-gray-500">Updating messages…</span>
+            </div>
+          ) : null}
           <InboxChatWindow
             contact={selectedContact}
             messages={currentMessages}
