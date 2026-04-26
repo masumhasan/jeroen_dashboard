@@ -12,6 +12,7 @@ import {
   ChevronRight,
   UserCircle,
   Utensils,
+  Tags,
 } from "lucide-react";
 import ShowSvg from "@/components/shared/ShowSvg";
 import SideBarLogo from "@/assets/images/SideBarLogo.svg";
@@ -191,6 +192,11 @@ export default function Sidebar({
       label: "Recipe Management",
       icon: Utensils,
       path: "/dashboard/recipe-management",
+    },
+    {
+      label: "Topic Management",
+      icon: Tags,
+      path: "/dashboard/topic-management",
     },
     { label: "Inbox", icon: Inbox, path: "/dashboard/inbox" },
   ];

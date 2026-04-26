@@ -24,6 +24,7 @@ const TermsAndConditionsPage = lazy(
 const PremiumUsersPage = lazy(() => import("./pages/PremiumUsersPage"));
 const UsersManagementPage = lazy(() => import("./pages/UserManagementPage"));
 const RecipeManagementPage = lazy(() => import("./pages/RecipeManagementPage"));
+const TopicManagementPage = lazy(() => import("./pages/TopicManagementPage"));
 const InboxPage = lazy(() => import("./pages/InboxPage")); // ← new
 
 const TOKEN_KEY = "access_token_recall_pro_dashboard";
@@ -328,6 +329,16 @@ export default function App() {
               <PrivateRoute>
                 <Layout>
                   <RecipeManagementPage />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/dashboard/topic-management"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <TopicManagementPage />
                 </Layout>
               </PrivateRoute>
             }
