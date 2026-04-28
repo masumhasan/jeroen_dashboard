@@ -242,7 +242,7 @@ export default function Sidebar({
               icon={SideBarLogo}
               height={48}
               width={160}
-              alt="App Logo"
+              alt="Logo"
             />
           )}
           <button
