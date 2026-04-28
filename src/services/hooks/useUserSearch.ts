@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSearchUsersQuery } from "../api/usersearchApi";
-import type { ManagedUserRaw } from "../api/usermanagementApi";
+import type { DashboardUserRole, ManagedUserRaw } from "../api/usermanagementApi";
 import type { ManagedUser } from "./useGetUserManagement";
 
 const mapUser = (u: ManagedUserRaw, index: number): ManagedUser => ({
@@ -11,6 +11,7 @@ const mapUser = (u: ManagedUserRaw, index: number): ManagedUser => ({
   avatar: u.profilePicture,
   joined: u.Joined,
   status: u.status === "Active" ? "active" : "suspended",
+  role: (u.role || "user") as DashboardUserRole,
 });
 
 export function useUserSearch() {

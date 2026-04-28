@@ -1,4 +1,7 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { API_BASE_URL } from "@/config/apiConfig";
+
+const TOKEN_KEY = "access_token_recall_pro_dashboard";
 
 export interface Topic {
   _id: string;
@@ -12,7 +15,12 @@ export interface Topic {
 export const topicApi = createApi({
   reducerPath: "topicApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://localhost:5000/api",
+    baseUrl: API_BASE_URL,
+    prepareHeaders: (headers) => {
+      const token = localStorage.getItem(TOKEN_KEY);
+      if (token) headers.set("Authorization", `Bearer ${token}`);
+      return headers;
+    },
   }),
   tagTypes: ["Topic"],
   endpoints: (builder) => ({

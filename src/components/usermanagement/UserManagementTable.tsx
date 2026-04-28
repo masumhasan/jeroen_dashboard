@@ -1,8 +1,12 @@
 import React from "react";
-import { ShieldOff, ShieldCheck } from "lucide-react";
+import { Trash2 } from "lucide-react";
+import type { DashboardUserRole } from "@/services/api/usermanagementApi";
 import type { ManagedUser } from "@/services/hooks/useGetUserManagement";
 import type { ActionType } from "@/services/hooks/useUserAction";
+import { canDashboardStaffDeleteUser } from "@/services/hooks/useUserAction";
 import UserActionModal from "@/components/shared/UserActionModal";
+
+const ALL_ROLES: DashboardUserRole[] = ["user", "moderator", "admin", "superadmin"];
 
 interface UserManagementTableProps {
   data: ManagedUser[];
@@ -13,6 +17,13 @@ interface UserManagementTableProps {
   onAction: (user: ManagedUser, action: ActionType) => void;
   onConfirm: () => void;
   onClose: () => void;
+  canManageRoles: boolean;
+  viewerRole: DashboardUserRole | null;
+  viewerUserId: string | null;
+  roleDrafts: Partial<Record<string, DashboardUserRole>>;
+  onRoleDraftChange: (userId: string, role: DashboardUserRole) => void;
+  onSaveRole: (userId: string) => void;
+  savingUserId: string | null;
 }
 
 const Avatar = ({ name, src }: { name: string; src?: string }) => {
@@ -70,7 +81,19 @@ const UserManagementTable: React.FC<UserManagementTableProps> = ({
   onAction,
   onConfirm,
   onClose,
+  canManageRoles,
+  viewerRole,
+  viewerUserId,
+  roleDrafts,
+  onRoleDraftChange,
+  onSaveRole,
+  savingUserId,
 }) => {
+  const roleOptions: DashboardUserRole[] =
+    viewerRole === "superadmin"
+      ? ALL_ROLES
+      : ALL_ROLES.filter((r) => r !== "superadmin");
+
   return (
     <>
       {confirmTarget && (
@@ -107,15 +130,16 @@ const UserManagementTable: React.FC<UserManagementTableProps> = ({
                 <Th width="48px">#</Th>
                 <Th width="220px">User</Th>
                 <Th>Phone Number</Th>
-                <Th>Joined</Th>
-                <Th>Actions</Th>
+                <Th width="112px">Joined</Th>
+                <Th width="220px">User Role</Th>
+                <Th width="120px">Actions</Th>
               </tr>
             </thead>
             <tbody>
               {data.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={6}
                     className="py-16 text-center text-sm"
                     style={{ color: "#000" }}
                   >
@@ -125,7 +149,15 @@ const UserManagementTable: React.FC<UserManagementTableProps> = ({
               ) : (
                 data.map((user, index) => {
                   const globalIndex = (currentPage - 1) * pageSize + index;
-                  const isSuspended = user.status === "suspended";
+                  const uid = String(user.id);
+                  const canDelete = canDashboardStaffDeleteUser(
+                    viewerRole,
+                    viewerUserId,
+                    user,
+                  );
+                  const effectiveRole =
+                    roleDrafts[uid] !== undefined ? roleDrafts[uid]! : user.role;
+                  const dirty = effectiveRole !== user.role;
 
                   return (
                     <tr
@@ -178,56 +210,78 @@ const UserManagementTable: React.FC<UserManagementTableProps> = ({
                       </td>
 
                       <td className="py-3.5 px-4">
-                        <span className="text-sm" style={{ color: "#000" }}>
+                        <span className="text-sm tabular-nums" style={{ color: "#000" }}>
                           {user.joined}
                         </span>
                       </td>
 
                       <td className="py-3.5 px-4">
-                        {isSuspended ? (
-                          <button
-                            onClick={() => onAction(user, "unblock")}
-                            title="Unblock user"
-                            className="w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-110"
-                            style={{
-                              background: "rgba(16,185,129,0.08)",
-                              border: "1px solid rgba(16,185,129,0.2)",
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.background =
-                                "rgba(16,185,129,0.18)";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.background =
-                                "rgba(16,185,129,0.08)";
-                            }}
-                          >
-                            <ShieldCheck
-                              size={15}
-                              style={{ color: "#10b981" }}
-                            />
-                          </button>
+                        {canManageRoles ? (
+                          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                            <select
+                              className="text-sm rounded-lg border border-gray-200 px-2 py-1.5 bg-white min-w-[160px]"
+                              style={{ borderColor: "rgba(137,149,127,0.35)" }}
+                              value={effectiveRole}
+                              onChange={(e) =>
+                                onRoleDraftChange(
+                                  uid,
+                                  e.target.value as DashboardUserRole
+                                )
+                              }
+                              disabled={savingUserId === uid}
+                            >
+                              {roleOptions.map((r) => (
+                                <option key={r} value={r}>
+                                  {r.charAt(0).toUpperCase() + r.slice(1)}
+                                </option>
+                              ))}
+                            </select>
+                            {dirty ? (
+                              <button
+                                type="button"
+                                onClick={() => onSaveRole(uid)}
+                                disabled={savingUserId === uid}
+                                className="text-xs font-semibold px-3 py-1.5 rounded-lg text-white shrink-0 disabled:opacity-50"
+                                style={{ background: "#89957F" }}
+                              >
+                                {savingUserId === uid ? "…" : "Update"}
+                              </button>
+                            ) : null}
+                          </div>
                         ) : (
-                          <button
-                            onClick={() => onAction(user, "block")}
-                            title="Suspend user"
-                            className="w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-110"
-                            style={{
-                              background: "rgba(239,68,68,0.08)",
-                              border: "1px solid rgba(239,68,68,0.2)",
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.background =
-                                "rgba(239,68,68,0.18)";
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.background =
-                                "rgba(239,68,68,0.08)";
-                            }}
-                          >
-                            <ShieldOff size={15} style={{ color: "#ef4444" }} />
-                          </button>
+                          <span className="text-sm capitalize" style={{ color: "#000" }}>
+                            {user.role}
+                          </span>
                         )}
+                      </td>
+
+                      <td className="py-3.5 px-4">
+                        <button
+                          type="button"
+                          onClick={() => canDelete && onAction(user, "delete")}
+                          disabled={!canDelete}
+                          title={
+                            canDelete
+                              ? "Delete user"
+                              : "You cannot delete this account"
+                          }
+                          className="w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-110 disabled:opacity-40 disabled:pointer-events-none disabled:hover:scale-100"
+                          style={{
+                            background: "rgba(239,68,68,0.08)",
+                            border: "1px solid rgba(239,68,68,0.2)",
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!canDelete) return;
+                            e.currentTarget.style.background =
+                              "rgba(239,68,68,0.18)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background =
+                              "rgba(239,68,68,0.08)";
+                          }}
+                        >
+                          <Trash2 size={15} style={{ color: "#ef4444" }} />
+                        </button>
                       </td>
                     </tr>
                   );

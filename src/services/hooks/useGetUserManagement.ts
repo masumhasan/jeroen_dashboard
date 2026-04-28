@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useGetUsersQuery } from "../api/usermanagementApi";
+import type { DashboardUserRole } from "../api/usermanagementApi";
 
 export type UserStatus = "active" | "suspended";
 
@@ -11,6 +12,7 @@ export interface ManagedUser {
   phone: string;
   joined: string;
   status: UserStatus;
+  role: DashboardUserRole;
 }
 
 const PAGE_SIZE = 10;
@@ -34,6 +36,7 @@ export function useGetUserManagement() {
         avatar: u.profilePicture,
         joined: u.Joined,
         status: u.status === "Active" ? "active" : "suspended",
+        role: (u.role || "user") as DashboardUserRole,
       })),
     [data],
   );
@@ -43,10 +46,6 @@ export function useGetUserManagement() {
   const handleSearchChange = (val: string) => {
     setSearch(val);
     setCurrentPage(1);
-  };
-
-  const updateUserStatus = (_id: string | number, _status: UserStatus) => {
-    refetch();
   };
 
   return {
@@ -61,6 +60,6 @@ export function useGetUserManagement() {
     users,
     onSearchChange: handleSearchChange,
     onPageChange: setCurrentPage,
-    updateUserStatus,
+    refetch,
   };
 }

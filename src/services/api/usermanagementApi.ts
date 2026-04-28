@@ -1,5 +1,7 @@
 import { baseApi } from "./baseApi";
 
+export type DashboardUserRole = "user" | "moderator" | "admin" | "superadmin";
+
 export interface ManagedUserRaw {
   id?: string;
   fullName: string;
@@ -9,6 +11,7 @@ export interface ManagedUserRaw {
   Joined: string;
   location: string;
   status: "Active" | "Inactive";
+  role?: DashboardUserRole;
 }
 
 export interface UserManagementMeta {
@@ -45,19 +48,35 @@ export const userManagementApi = baseApi.injectEndpoints({
         if (search) params.set("search", search);
         return `/admin/users?${params.toString()}`;
       },
+      providesTags: ["UserManagement"],
     }),
-    updateUserStatus: builder.mutation<
-      { success: boolean; message: string; data: { id: string; status: "Active" | "Inactive" } },
-      { userId: string; status: "active" | "suspended" }
+    deleteUser: builder.mutation<
+      { success: boolean; message: string; data: { id: string; fullName: string; email: string } },
+      { userId: string }
     >({
-      query: ({ userId, status }) => ({
-        url: `/admin/users/${userId}/status`,
-        method: "PATCH",
-        body: { status },
+      query: ({ userId }) => ({
+        url: `/admin/users/${userId}`,
+        method: "DELETE",
       }),
+      invalidatesTags: ["UserManagement"],
+    }),
+    updateUserRole: builder.mutation<
+      { success: boolean; message: string; data: { id: string; role: DashboardUserRole } },
+      { userId: string; role: DashboardUserRole }
+    >({
+      query: ({ userId, role }) => ({
+        url: `/admin/users/${userId}/role`,
+        method: "PATCH",
+        body: { role },
+      }),
+      invalidatesTags: ["UserManagement"],
     }),
   }),
   overrideExisting: false,
 });
 
-export const { useGetUsersQuery, useUpdateUserStatusMutation } = userManagementApi;
+export const {
+  useGetUsersQuery,
+  useDeleteUserMutation,
+  useUpdateUserRoleMutation,
+} = userManagementApi;

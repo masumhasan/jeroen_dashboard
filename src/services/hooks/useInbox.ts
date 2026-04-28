@@ -1,6 +1,18 @@
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { API_BASE_URL } from "@/config/apiConfig";
 
+const TOKEN_KEY = "access_token_recall_pro_dashboard";
+
+function withAuth(init: RequestInit = {}): RequestInit {
+  const token = localStorage.getItem(TOKEN_KEY);
+  const headers = new Headers(init.headers ?? undefined);
+  if (init.body && typeof init.body === "string" && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+  return { ...init, headers };
+}
+
 export interface InboxContact {
   id: string | number;
   name: string;
@@ -35,7 +47,10 @@ export function useInbox() {
 
   const loadThreads = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/admin/support/threads`);
+      const res = await fetch(
+        `${API_BASE_URL}/admin/support/threads`,
+        withAuth()
+      );
       if (!res.ok) throw new Error(`Could not load conversations (${res.status})`);
       const json = await res.json();
       const threads: InboxContact[] = json?.data?.threads ?? [];
@@ -51,7 +66,10 @@ export function useInbox() {
   const loadMessages = useCallback(async (threadId: string) => {
     setLoadingMessages(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/admin/support/threads/${threadId}`);
+      const res = await fetch(
+        `${API_BASE_URL}/admin/support/threads/${threadId}`,
+        withAuth()
+      );
       if (!res.ok) throw new Error("Could not load messages");
       const json = await res.json();
       const msgs: InboxMessage[] = json?.data?.messages ?? [];
@@ -88,9 +106,10 @@ export function useInbox() {
 
   const markRead = useCallback(async (threadId: string) => {
     try {
-      await fetch(`${API_BASE_URL}/admin/support/threads/${threadId}/read`, {
-        method: "PATCH",
-      });
+      await fetch(
+        `${API_BASE_URL}/admin/support/threads/${threadId}/read`,
+        withAuth({ method: "PATCH" })
+      );
       setRawContacts((prev) =>
         prev.map((c) =>
           String(c.id) === String(threadId) ? { ...c, unread: 0 } : c
@@ -121,11 +140,10 @@ export function useInbox() {
     try {
       const res = await fetch(
         `${API_BASE_URL}/admin/support/threads/${selectedId}/replies`,
-        {
+        withAuth({
           method: "POST",
-          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ body: text }),
-        }
+        })
       );
       if (!res.ok) throw new Error("Send failed");
       const json = await res.json();

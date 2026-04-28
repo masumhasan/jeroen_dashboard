@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import toast from "react-hot-toast";
 import UserSearchBar from "@/components/usermanagement/UserSearchBar";
 import UserManagementTable from "@/components/usermanagement/UserManagementTable";
 import UserPagination from "@/components/shared/UserPagination";
@@ -7,7 +8,49 @@ import UserSearchOverlay from "@/components/shared/UserSearchOverlay";
 import { useGetUserManagement } from "@/services/hooks/useGetUserManagement";
 import { useUserSearch } from "@/services/hooks/useUserSearch";
 import useUserActions from "@/services/hooks/useUserAction";
+import type { DashboardUserRole } from "@/services/api/usermanagementApi";
+import { useUpdateUserRoleMutation } from "@/services/api/usermanagementApi";
+import { DASHBOARD_USER_KEY } from "@/services/hooks/useLogin";
+
+function readViewerRole(): DashboardUserRole | null {
+  try {
+    const raw = localStorage.getItem(DASHBOARD_USER_KEY);
+    if (!raw) return null;
+    const u = JSON.parse(raw) as { role?: string };
+    const r = String(u.role || "user").toLowerCase();
+    if (["user", "moderator", "admin", "superadmin"].includes(r)) {
+      return r as DashboardUserRole;
+    }
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
+
+function readViewerUserId(): string | null {
+  try {
+    const raw = localStorage.getItem(DASHBOARD_USER_KEY);
+    if (!raw) return null;
+    const u = JSON.parse(raw) as { _id?: string; id?: string };
+    const id = u._id ?? u.id;
+    return id != null ? String(id) : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function UserManagementPage() {
+  const [roleDrafts, setRoleDrafts] = useState<
+    Partial<Record<string, DashboardUserRole>>
+  >({});
+  const [savingUserId, setSavingUserId] = useState<string | null>(null);
+  const [updateUserRole] = useUpdateUserRoleMutation();
+
+  const viewerRole = useMemo(() => readViewerRole(), []);
+  const viewerUserId = useMemo(() => readViewerUserId(), []);
+  const canManageRoles =
+    viewerRole === "admin" || viewerRole === "superadmin";
+
   const {
     isLoading,
     isFetching,
@@ -20,11 +63,11 @@ export default function UserManagementPage() {
     users,
     onSearchChange,
     onPageChange,
-    updateUserStatus,
+    refetch,
   } = useGetUserManagement();
 
   const { confirmTarget, openConfirm, closeConfirm, handleConfirm, isActing } =
-    useUserActions({ updateUserStatus });
+    useUserActions({ onDeleted: () => void refetch() });
 
   const {
     search: overlaySearch,
@@ -44,6 +87,36 @@ export default function UserManagementPage() {
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, []);
+
+  const handleRoleDraftChange = useCallback(
+    (userId: string, role: DashboardUserRole) => {
+      setRoleDrafts((d) => ({ ...d, [userId]: role }));
+    },
+    []
+  );
+
+  const handleSaveRole = useCallback(
+    async (userId: string) => {
+      const next = roleDrafts[userId];
+      if (!next) return;
+      setSavingUserId(userId);
+      try {
+        await updateUserRole({ userId, role: next }).unwrap();
+        setRoleDrafts((d) => {
+          const n = { ...d };
+          delete n[userId];
+          return n;
+        });
+        void refetch();
+        toast.success("Role updated");
+      } catch {
+        toast.error("Could not update role");
+      } finally {
+        setSavingUserId(null);
+      }
+    },
+    [roleDrafts, updateUserRole, refetch]
+  );
 
   if (isLoading) return <UserManagementSkeleton />;
 
@@ -102,6 +175,13 @@ export default function UserManagementPage() {
           onAction={openConfirm}
           onConfirm={handleConfirm}
           onClose={closeConfirm}
+          canManageRoles={canManageRoles}
+          viewerRole={viewerRole}
+          viewerUserId={viewerUserId}
+          roleDrafts={roleDrafts}
+          onRoleDraftChange={handleRoleDraftChange}
+          onSaveRole={handleSaveRole}
+          savingUserId={savingUserId}
         />
       </div>
 
