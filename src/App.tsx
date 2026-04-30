@@ -25,7 +25,9 @@ const PremiumUsersPage = lazy(() => import("./pages/PremiumUsersPage"));
 const UsersManagementPage = lazy(() => import("./pages/UserManagementPage"));
 const RecipeManagementPage = lazy(() => import("./pages/RecipeManagementPage"));
 const TopicManagementPage = lazy(() => import("./pages/TopicManagementPage"));
-const InboxPage = lazy(() => import("./pages/InboxPage")); // ← new
+const AllergyManagementPage = lazy(() => import("./pages/AllergyManagementPage"));
+const DietaryPreferenceManagementPage = lazy(() => import("./pages/DietaryPreferenceManagementPage"));
+const InboxPage = lazy(() => import("./pages/InboxPage"));
 
 const TOKEN_KEY = "access_token_recall_pro_dashboard";
 const getToken = () => localStorage.getItem(TOKEN_KEY);
@@ -334,6 +336,26 @@ export default function App() {
             }
           />
           <Route
+            path="/dashboard/allergy-management"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <AllergyManagementPage />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/dashboard/dietary-preference-management"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <DietaryPreferenceManagementPage />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+          <Route
             path="/dashboard/topic-management"
             element={
               <PrivateRoute>
@@ -343,8 +365,6 @@ export default function App() {
               </PrivateRoute>
             }
           />
-
-          {/* ← new inbox route */}
           <Route
             path="/dashboard/inbox"
             element={

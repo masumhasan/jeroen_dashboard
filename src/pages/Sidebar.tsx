@@ -13,6 +13,8 @@ import {
   UserCircle,
   Utensils,
   Tags,
+  ShieldAlert,
+  Leaf,
 } from "lucide-react";
 import ShowSvg from "@/components/shared/ShowSvg";
 import SideBarLogo from "@/assets/images/SideBarLogo.svg";
@@ -192,6 +194,16 @@ export default function Sidebar({
       label: "Recipe Management",
       icon: Utensils,
       path: "/dashboard/recipe-management",
+    },
+    {
+      label: "Allergies Management",
+      icon: ShieldAlert,
+      path: "/dashboard/allergy-management",
+    },
+    {
+      label: "Dietary Preferences",
+      icon: Leaf,
+      path: "/dashboard/dietary-preference-management",
     },
     {
       label: "Topic Management",
