@@ -6,6 +6,7 @@ import {
 } from "@/services/api/allergyApi";
 import { Edit2, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
+import ServerConnectionError from "@/components/shared/ServerConnectionError";
 
 export default function AllergyManagementPage() {
   const [search, setSearch] = useState("");
@@ -13,7 +14,7 @@ export default function AllergyManagementPage() {
   const [description, setDescription] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  const { data: items = [], isLoading, isFetching } = useGetAllergiesQuery({ search });
+  const { data: items = [], isLoading, isFetching, isError, refetch } = useGetAllergiesQuery({ search });
   const [createItem, { isLoading: isCreating }] = useCreateAllergyMutation();
   const [updateItem, { isLoading: isUpdating }] = useUpdateAllergyMutation();
   const [deleteItem, { isLoading: isDeleting }] = useDeleteAllergyMutation();
@@ -48,6 +49,8 @@ export default function AllergyManagementPage() {
           {items.length.toLocaleString()} items
         </p>
       </div>
+
+      {isError && <ServerConnectionError onRetry={refetch} />}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         <input

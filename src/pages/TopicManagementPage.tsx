@@ -6,6 +6,7 @@ import {
 } from "@/services/api/topicApi";
 import { Edit2, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
+import ServerConnectionError from "@/components/shared/ServerConnectionError";
 
 const PRESET_TOPIC_COLORS = [
   "#89957F",
@@ -25,7 +26,7 @@ export default function TopicManagementPage() {
   const [color, setColor] = useState("#89957F");
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  const { data: topics = [], isLoading, isFetching } = useGetTopicsQuery({ search });
+  const { data: topics = [], isLoading, isFetching, isError, refetch } = useGetTopicsQuery({ search });
   const [createTopic, { isLoading: isCreating }] = useCreateTopicMutation();
   const [updateTopic, { isLoading: isUpdating }] = useUpdateTopicMutation();
   const [deleteTopic, { isLoading: isDeleting }] = useDeleteTopicMutation();
@@ -71,6 +72,8 @@ export default function TopicManagementPage() {
           </p>
         </div>
       </div>
+
+      {isError && <ServerConnectionError onRetry={refetch} />}
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
         <input

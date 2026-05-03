@@ -8,11 +8,13 @@ import { useGetRecipeManagement } from "@/services/hooks/useGetRecipeManagement"
 import RecipeModal from "@/components/recipemanagement/RecipeModal";
 import type { Recipe } from "@/services/api/recipeApi";
 import { Plus } from "lucide-react";
+import ServerConnectionError from "@/components/shared/ServerConnectionError";
 
 export default function RecipeManagementPage() {
   const {
     isLoading,
     isFetching,
+    isError,
     search,
     category,
     currentPage,
@@ -22,6 +24,7 @@ export default function RecipeManagementPage() {
     onSearchChange,
     onCategoryChange,
     onPageChange,
+    refetch,
   } = useGetRecipeManagement();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -66,6 +69,8 @@ export default function RecipeManagementPage() {
           Add New Recipe
         </button>
       </div>
+
+      {isError && <ServerConnectionError onRetry={refetch} />}
 
       {/* Toolbar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">

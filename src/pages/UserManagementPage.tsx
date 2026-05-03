@@ -5,6 +5,7 @@ import UserManagementTable from "@/components/usermanagement/UserManagementTable
 import UserPagination from "@/components/shared/UserPagination";
 import UserManagementSkeleton from "@/components/Skeletons/UserManagementSkeleton";
 import UserSearchOverlay from "@/components/shared/UserSearchOverlay";
+import ServerConnectionError from "@/components/shared/ServerConnectionError";
 import { useGetUserManagement } from "@/services/hooks/useGetUserManagement";
 import { useUserSearch } from "@/services/hooks/useUserSearch";
 import useUserActions from "@/services/hooks/useUserAction";
@@ -147,14 +148,7 @@ export default function UserManagementPage() {
         </div>
       </div>
 
-      {isError && (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-          Failed to load users from API. Check dashboard API URL and backend server.
-          <span className="block mt-1 text-xs opacity-80">
-            {JSON.stringify(error)}
-          </span>
-        </div>
-      )}
+      {isError && <ServerConnectionError onRetry={refetch} />}
 
       {/* Toolbar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">

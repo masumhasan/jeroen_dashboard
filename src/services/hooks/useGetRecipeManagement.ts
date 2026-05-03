@@ -15,7 +15,7 @@ export const useGetRecipeManagement = () => {
     return () => clearTimeout(timer);
   }, [search]);
 
-  const { data, isLoading, isFetching } = useGetRecipesQuery({
+  const { data, isLoading, isFetching, isError, refetch } = useGetRecipesQuery({
     search: debouncedSearch,
     category,
     page: currentPage,
@@ -37,6 +37,7 @@ export const useGetRecipeManagement = () => {
   return {
     isLoading,
     isFetching,
+    isError,
     search,
     category,
     currentPage,
@@ -46,5 +47,6 @@ export const useGetRecipeManagement = () => {
     onSearchChange,
     onCategoryChange,
     onPageChange,
+    refetch,
   };
 };

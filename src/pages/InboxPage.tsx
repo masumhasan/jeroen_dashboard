@@ -1,6 +1,7 @@
 import { useInbox } from "@/services/hooks/useInbox";
 import InboxContactList from "@/components/inbox/InboxContactList";
 import InboxChatWindow from "@/components/inbox/InboxChatWindow";
+import ServerConnectionError from "@/components/shared/ServerConnectionError";
 export default function InboxPage() {
   const {
     contacts,
@@ -19,6 +20,7 @@ export default function InboxPage() {
     selectContact,
     sendMessage,
     handleKeyDown,
+    reloadThreads,
   } = useInbox();
 
   return (
@@ -32,10 +34,11 @@ export default function InboxPage() {
         >
           {totalConversationCount} conversations
         </p>
-        {loadError ? (
-          <p className="text-sm text-red-600 mt-2">{loadError}</p>
-        ) : null}
       </div>
+
+      {loadError ? (
+        <ServerConnectionError onRetry={reloadThreads} />
+      ) : null}
 
       {/* Chat card */}
       <div

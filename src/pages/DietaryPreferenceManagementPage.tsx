@@ -6,6 +6,7 @@ import {
 } from "@/services/api/dietaryPreferenceApi";
 import { Edit2, Plus, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
+import ServerConnectionError from "@/components/shared/ServerConnectionError";
 
 export default function DietaryPreferenceManagementPage() {
   const [search, setSearch] = useState("");
@@ -13,7 +14,7 @@ export default function DietaryPreferenceManagementPage() {
   const [description, setDescription] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  const { data: items = [], isLoading, isFetching } = useGetDietaryPreferencesQuery({ search });
+  const { data: items = [], isLoading, isFetching, isError, refetch } = useGetDietaryPreferencesQuery({ search });
   const [createItem, { isLoading: isCreating }] = useCreateDietaryPreferenceMutation();
   const [updateItem, { isLoading: isUpdating }] = useUpdateDietaryPreferenceMutation();
   const [deleteItem, { isLoading: isDeleting }] = useDeleteDietaryPreferenceMutation();
@@ -48,6 +49,8 @@ export default function DietaryPreferenceManagementPage() {
           {items.length.toLocaleString()} items
         </p>
       </div>
+
+      {isError && <ServerConnectionError onRetry={refetch} />}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         <input
