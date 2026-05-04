@@ -15,7 +15,7 @@ export interface Recipe {
   _id?: string;
   number: number;
   name: string;
-  category: string;
+  category: string[];
   recipeDetails: string[];
   ingredients: string[];
   cookingTip: string | null;

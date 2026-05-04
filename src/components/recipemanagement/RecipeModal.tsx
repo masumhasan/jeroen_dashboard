@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { X, Upload, Plus, Minus } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { X, Upload, Plus, Minus, ChevronDown, Check } from "lucide-react";
 import type { Recipe } from "@/services/api/recipeApi";
 import { useAddRecipeMutation, useUpdateRecipeMutation } from "@/services/api/recipeApi";
 import { toast } from "react-hot-toast";
@@ -13,9 +13,11 @@ const RecipeModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
   const [addRecipe, { isLoading: isAdding }] = useAddRecipeMutation();
   const [updateRecipe, { isLoading: isUpdating }] = useUpdateRecipeMutation();
 
+  const CATEGORY_OPTIONS = ["Ontbijt", "Lunch", "Diner", "Snack", "Dranken", "Uncategorised"];
+
   const [formData, setFormData] = useState<Partial<Recipe>>({
     name: "",
-    category: "Ontbijt",
+    category: ["Ontbijt"],
     recipeDetails: [""],
     ingredients: [""],
     cookingTip: "",
@@ -27,10 +29,15 @@ const RecipeModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
+  const categoryDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (recipe) {
-      setFormData(recipe);
+      const normalizedCategory = Array.isArray(recipe.category)
+        ? recipe.category
+        : recipe.category ? [recipe.category] : ["Ontbijt"];
+      setFormData({ ...recipe, category: normalizedCategory });
       if (recipe.recipeImage) {
         setImagePreview(
           recipe.recipeImage.startsWith("http")
@@ -40,6 +47,25 @@ const RecipeModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
       }
     }
   }, [recipe]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(e.target as Node)) {
+        setCategoryDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const toggleCategory = (cat: string) => {
+    setFormData((prev) => {
+      const current = Array.isArray(prev.category) ? prev.category : [prev.category || "Ontbijt"];
+      const exists = current.includes(cat);
+      const updated = exists ? current.filter((c) => c !== cat) : [...current, cat];
+      return { ...prev, category: updated.length > 0 ? updated : current };
+    });
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -137,21 +163,40 @@ const RecipeModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div>
+                <div ref={categoryDropdownRef} className="relative">
                   <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1 block">Category</label>
-                  <select
-                    name="category"
-                    value={formData.category}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-100 bg-gray-50 focus:ring-2 focus:ring-[#89957F]/20 outline-none text-sm font-medium"
+                  <button
+                    type="button"
+                    onClick={() => setCategoryDropdownOpen((v) => !v)}
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-100 bg-gray-50 focus:ring-2 focus:ring-[#89957F]/20 outline-none text-sm font-medium text-left flex items-center justify-between"
                   >
-                    <option value="Ontbijt">Ontbijt</option>
-                    <option value="Lunch">Lunch</option>
-                    <option value="Diner">Diner</option>
-                    <option value="Snack">Snack</option>
-                    <option value="Dranken">Dranken</option>
-                    <option value="Uncategorised">Uncategorised</option>
-                  </select>
+                    <span className="truncate">
+                      {Array.isArray(formData.category) && formData.category.length > 0
+                        ? `${formData.category.length} Selected`
+                        : "Select categories"}
+                    </span>
+                    <ChevronDown size={16} className={`transition-transform ${categoryDropdownOpen ? "rotate-180" : ""}`} />
+                  </button>
+                  {categoryDropdownOpen && (
+                    <div className="absolute z-50 mt-1 w-full bg-white rounded-xl border border-gray-100 shadow-lg py-1 max-h-48 overflow-y-auto">
+                      {CATEGORY_OPTIONS.map((cat) => {
+                        const selected = Array.isArray(formData.category) && formData.category.includes(cat);
+                        return (
+                          <button
+                            key={cat}
+                            type="button"
+                            onClick={() => toggleCategory(cat)}
+                            className="w-full px-4 py-2 flex items-center gap-3 hover:bg-gray-50 transition-colors text-left"
+                          >
+                            <div className={`w-4 h-4 rounded border flex items-center justify-center ${selected ? "bg-[#89957F] border-[#89957F]" : "border-gray-300"}`}>
+                              {selected && <Check size={12} className="text-white" />}
+                            </div>
+                            <span className="text-sm font-medium">{cat}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1 block">Book Number</label>

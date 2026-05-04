@@ -14,7 +14,7 @@ export interface UserRecipeNutrition {
 export interface UserRecipe {
   _id?: string;
   name: string;
-  category: string;
+  category: string[];
   recipeDetails: string[];
   ingredients: string[];
   cookingTip: string | null;

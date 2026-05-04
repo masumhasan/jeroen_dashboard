@@ -151,9 +151,13 @@ const UserRecipeTable: React.FC<Props> = ({ data, currentPage, pageSize = 10 }) 
                       </div>
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className="text-xs px-2 py-1 rounded-full bg-[#89957F]/10 text-[#89957F] font-bold">
-                        {recipe.category}
-                      </span>
+                      <div className="flex flex-wrap gap-1">
+                        {(Array.isArray(recipe.category) ? recipe.category : [recipe.category]).map((cat) => (
+                          <span key={cat} className="text-xs px-2 py-1 rounded-full bg-[#89957F]/10 text-[#89957F] font-bold">
+                            {cat}
+                          </span>
+                        ))}
+                      </div>
                     </td>
                     <td className="py-3.5 px-4">
                       <span
