@@ -24,6 +24,7 @@ const TermsAndConditionsPage = lazy(
 const PremiumUsersPage = lazy(() => import("./pages/PremiumUsersPage"));
 const UsersManagementPage = lazy(() => import("./pages/UserManagementPage"));
 const RecipeManagementPage = lazy(() => import("./pages/RecipeManagementPage"));
+const UserRecipesPage = lazy(() => import("./pages/UserRecipesPage"));
 const TopicManagementPage = lazy(() => import("./pages/TopicManagementPage"));
 const AllergyManagementPage = lazy(() => import("./pages/AllergyManagementPage"));
 const DietaryPreferenceManagementPage = lazy(() => import("./pages/DietaryPreferenceManagementPage"));
@@ -331,6 +332,16 @@ export default function App() {
               <PrivateRoute>
                 <Layout>
                   <RecipeManagementPage />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/dashboard/user-recipes"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <UserRecipesPage />
                 </Layout>
               </PrivateRoute>
             }

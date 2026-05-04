@@ -15,6 +15,7 @@ import {
   Tags,
   ShieldAlert,
   Leaf,
+  ChefHat,
 } from "lucide-react";
 import ShowSvg from "@/components/shared/ShowSvg";
 import SideBarLogo from "@/assets/images/SideBarLogo.svg";
@@ -194,6 +195,11 @@ export default function Sidebar({
       label: "Recipe Management",
       icon: Utensils,
       path: "/dashboard/recipe-management",
+    },
+    {
+      label: "User Recipes",
+      icon: ChefHat,
+      path: "/dashboard/user-recipes",
     },
     {
       label: "Allergies Management",
