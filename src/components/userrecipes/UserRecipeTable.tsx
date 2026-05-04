@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Check, X, Trash2 } from "lucide-react";
 import type { UserRecipe } from "@/services/api/userRecipeApi";
 import {
@@ -7,6 +7,7 @@ import {
   useDeleteUserRecipeMutation,
 } from "@/services/api/userRecipeApi";
 import { toast } from "react-hot-toast";
+import UserRecipeDetailModal from "./UserRecipeDetailModal";
 
 interface Props {
   data: UserRecipe[];
@@ -33,6 +34,7 @@ const UserRecipeTable: React.FC<Props> = ({ data, currentPage, pageSize = 10 }) 
   const [approveRecipe] = useApproveUserRecipeMutation();
   const [declineRecipe] = useDeclineUserRecipeMutation();
   const [deleteRecipe] = useDeleteUserRecipeMutation();
+  const [selectedRecipe, setSelectedRecipe] = useState<UserRecipe | null>(null);
 
   const handleApprove = async (id: string) => {
     try {
@@ -107,10 +109,11 @@ const UserRecipeTable: React.FC<Props> = ({ data, currentPage, pageSize = 10 }) 
                 return (
                   <tr
                     key={recipe._id}
-                    className="transition-colors duration-150"
+                    className="transition-colors duration-150 cursor-pointer"
                     style={{ borderBottom: "1px solid rgba(137, 149, 127, 0.06)" }}
                     onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(137, 149, 127, 0.05)")}
                     onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                    onClick={() => setSelectedRecipe(recipe)}
                   >
                     <td className="py-3.5 px-4">
                       <span className="text-xs font-medium" style={{ color: "#000" }}>
@@ -179,7 +182,7 @@ const UserRecipeTable: React.FC<Props> = ({ data, currentPage, pageSize = 10 }) 
                       </div>
                     </td>
                     <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                         {recipe.status === "pending" && (
                           <>
                             <button
@@ -214,6 +217,13 @@ const UserRecipeTable: React.FC<Props> = ({ data, currentPage, pageSize = 10 }) 
           </tbody>
         </table>
       </div>
+
+      {selectedRecipe && (
+        <UserRecipeDetailModal
+          recipe={selectedRecipe}
+          onClose={() => setSelectedRecipe(null)}
+        />
+      )}
     </div>
   );
 };
