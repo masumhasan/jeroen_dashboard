@@ -22,6 +22,8 @@ export interface Recipe {
   personsServing: number | null;
   nutrition: RecipeNutrition;
   book: number;
+  bookTitle?: string;
+  bookSku?: string;
   recipeImage?: string;
   createdAt?: string;
   updatedAt?: string;

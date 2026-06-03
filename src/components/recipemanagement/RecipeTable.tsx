@@ -117,7 +117,19 @@ const RecipeTable: React.FC<RecipeTableProps> = ({ data, currentPage, pageSize =
                       </div>
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className="text-sm font-medium">Book {recipe.book}</span>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium">Book {recipe.book}</span>
+                        {recipe.bookTitle && (
+                          <span className="text-[10px] text-gray-500 font-medium">
+                            {recipe.bookTitle}
+                          </span>
+                        )}
+                        {recipe.bookSku && (
+                          <span className="text-[9px] text-[#89957F] font-bold uppercase tracking-wider">
+                            {recipe.bookSku}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="py-3.5 px-4">
                       <div className="text-xs space-x-1">

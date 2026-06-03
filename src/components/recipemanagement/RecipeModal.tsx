@@ -207,6 +207,12 @@ const RecipeModal: React.FC<RecipeModalProps> = ({ recipe, onClose }) => {
                     onChange={handleInputChange}
                     className="w-full px-4 py-2.5 rounded-xl border border-gray-100 bg-gray-50 focus:ring-2 focus:ring-[#89957F]/20 outline-none text-sm font-medium"
                   />
+                  {recipe && (
+                    <div className="mt-1 flex flex-col">
+                      {recipe.bookTitle && <span className="text-[9px] text-gray-500 font-medium truncate">{recipe.bookTitle}</span>}
+                      {recipe.bookSku && <span className="text-[8px] text-[#89957F] font-bold truncate">{recipe.bookSku}</span>}
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
