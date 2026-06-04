@@ -28,8 +28,15 @@ export interface UserRecipe {
     email: string;
   };
   status: "pending" | "approved" | "declined";
+  rejectionFeedback?: string | null;
+  rejectionFeedbackReadAt?: string | null;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface DeclineUserRecipeRequest {
+  id: string;
+  rejectionFeedback: string;
 }
 
 export interface GetUserRecipesResponse {
@@ -71,10 +78,11 @@ export const userRecipeApi = createApi({
       }),
       invalidatesTags: ["UserRecipe"],
     }),
-    declineUserRecipe: builder.mutation<UserRecipe, string>({
-      query: (id) => ({
+    declineUserRecipe: builder.mutation<UserRecipe, DeclineUserRecipeRequest>({
+      query: ({ id, rejectionFeedback }) => ({
         url: `/user-recipes/${id}/decline`,
         method: "PATCH",
+        body: { rejectionFeedback },
       }),
       invalidatesTags: ["UserRecipe"],
     }),

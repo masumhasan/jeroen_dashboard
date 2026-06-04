@@ -11,6 +11,7 @@ import { toast } from "react-hot-toast";
 interface Props {
   recipe: UserRecipe;
   onClose: () => void;
+  initialMode?: "view" | "decline";
 }
 
 const statusColors: Record<string, { bg: string; text: string }> = {
@@ -19,10 +20,17 @@ const statusColors: Record<string, { bg: string; text: string }> = {
   declined: { bg: "rgba(239,68,68,0.12)", text: "#b91c1c" },
 };
 
-const UserRecipeDetailModal: React.FC<Props> = ({ recipe, onClose }) => {
+const UserRecipeDetailModal: React.FC<Props> = ({ recipe, onClose, initialMode = "view" }) => {
   const [approveRecipe, { isLoading: isApproving }] = useApproveUserRecipeMutation();
   const [declineRecipe, { isLoading: isDeclining }] = useDeclineUserRecipeMutation();
   const [deleteRecipe, { isLoading: isDeleting }] = useDeleteUserRecipeMutation();
+  const [declineMode, setDeclineMode] = React.useState(initialMode === "decline");
+  const [rejectFeedback, setRejectFeedback] = React.useState("");
+
+  React.useEffect(() => {
+    setDeclineMode(initialMode === "decline");
+    setRejectFeedback("");
+  }, [initialMode, recipe._id]);
 
   const handleApprove = async () => {
     if (!recipe._id) return;
@@ -37,8 +45,13 @@ const UserRecipeDetailModal: React.FC<Props> = ({ recipe, onClose }) => {
 
   const handleDecline = async () => {
     if (!recipe._id) return;
+    const trimmedFeedback = rejectFeedback.trim();
+    if (!trimmedFeedback) {
+      toast.error("Please provide reject feedback");
+      return;
+    }
     try {
-      await declineRecipe(recipe._id).unwrap();
+      await declineRecipe({ id: recipe._id, rejectionFeedback: trimmedFeedback }).unwrap();
       toast.success("Recipe declined");
       onClose();
     } catch {
@@ -203,6 +216,27 @@ const UserRecipeDetailModal: React.FC<Props> = ({ recipe, onClose }) => {
                   )}
                 </div>
               </div>
+
+              {recipe.rejectionFeedback && (
+                <div>
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1 block">Previous Reject Feedback</label>
+                  <div className="w-full px-4 py-3 rounded-xl border border-red-100 bg-red-50 text-sm text-red-700 whitespace-pre-wrap">
+                    {recipe.rejectionFeedback}
+                  </div>
+                </div>
+              )}
+
+              {recipe.status === "pending" && declineMode && (
+                <div>
+                  <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-1 block">Reject Feedback</label>
+                  <textarea
+                    value={rejectFeedback}
+                    onChange={(e) => setRejectFeedback(e.target.value)}
+                    placeholder="Your recipe category is wrong. Fix and submit again."
+                    className="w-full min-h-32 px-4 py-3 rounded-xl border border-red-100 bg-red-50 text-sm outline-none resize-none focus:ring-2 focus:ring-red-200"
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -212,14 +246,6 @@ const UserRecipeDetailModal: React.FC<Props> = ({ recipe, onClose }) => {
           {recipe.status === "pending" && (
             <>
               <button
-                onClick={handleDecline}
-                disabled={isDeclining}
-                className="px-6 py-2.5 rounded-xl text-sm font-bold bg-orange-50 text-orange-600 hover:bg-orange-100 transition-colors flex items-center gap-2 disabled:opacity-50"
-              >
-                <XCircle size={16} />
-                {isDeclining ? "Declining..." : "Decline"}
-              </button>
-              <button
                 onClick={handleApprove}
                 disabled={isApproving}
                 className="px-6 py-2.5 rounded-xl text-sm font-bold bg-green-50 text-green-600 hover:bg-green-100 transition-colors flex items-center gap-2 disabled:opacity-50"
@@ -227,6 +253,31 @@ const UserRecipeDetailModal: React.FC<Props> = ({ recipe, onClose }) => {
                 <Check size={16} />
                 {isApproving ? "Approving..." : "Approve"}
               </button>
+              <button
+                onClick={() => {
+                  if (declineMode) {
+                    void handleDecline();
+                  } else {
+                    setDeclineMode(true);
+                  }
+                }}
+                disabled={isDeclining}
+                className="px-6 py-2.5 rounded-xl text-sm font-bold bg-orange-50 text-orange-600 hover:bg-orange-100 transition-colors flex items-center gap-2 disabled:opacity-50"
+              >
+                <XCircle size={16} />
+                {isDeclining ? "Declining..." : declineMode ? "Submit Reject" : "Reject"}
+              </button>
+              {declineMode && (
+                <button
+                  onClick={() => {
+                    setDeclineMode(false);
+                    setRejectFeedback("");
+                  }}
+                  className="px-6 py-2.5 rounded-xl text-sm font-bold bg-gray-50 text-gray-600 hover:bg-gray-100 transition-colors"
+                >
+                  Cancel
+                </button>
+              )}
             </>
           )}
           <button

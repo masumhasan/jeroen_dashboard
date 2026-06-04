@@ -3,7 +3,6 @@ import { Check, X, Trash2 } from "lucide-react";
 import type { UserRecipe } from "@/services/api/userRecipeApi";
 import {
   useApproveUserRecipeMutation,
-  useDeclineUserRecipeMutation,
   useDeleteUserRecipeMutation,
 } from "@/services/api/userRecipeApi";
 import { toast } from "react-hot-toast";
@@ -14,6 +13,11 @@ interface Props {
   currentPage: number;
   pageSize?: number;
 }
+
+type SelectedRecipeState = {
+  recipe: UserRecipe;
+  mode: "view" | "decline";
+} | null;
 
 const Th = ({ children, width }: { children: React.ReactNode; width?: string }) => (
   <th
@@ -32,9 +36,8 @@ const statusColors: Record<string, { bg: string; text: string }> = {
 
 const UserRecipeTable: React.FC<Props> = ({ data, currentPage, pageSize = 10 }) => {
   const [approveRecipe] = useApproveUserRecipeMutation();
-  const [declineRecipe] = useDeclineUserRecipeMutation();
   const [deleteRecipe] = useDeleteUserRecipeMutation();
-  const [selectedRecipe, setSelectedRecipe] = useState<UserRecipe | null>(null);
+  const [selectedRecipe, setSelectedRecipe] = useState<SelectedRecipeState>(null);
 
   const handleApprove = async (id: string) => {
     try {
@@ -42,15 +45,6 @@ const UserRecipeTable: React.FC<Props> = ({ data, currentPage, pageSize = 10 }) 
       toast.success("Recipe approved");
     } catch {
       toast.error("Failed to approve recipe");
-    }
-  };
-
-  const handleDecline = async (id: string) => {
-    try {
-      await declineRecipe(id).unwrap();
-      toast.success("Recipe declined");
-    } catch {
-      toast.error("Failed to decline recipe");
     }
   };
 
@@ -113,7 +107,7 @@ const UserRecipeTable: React.FC<Props> = ({ data, currentPage, pageSize = 10 }) 
                     style={{ borderBottom: "1px solid rgba(137, 149, 127, 0.06)" }}
                     onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(137, 149, 127, 0.05)")}
                     onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                    onClick={() => setSelectedRecipe(recipe)}
+                    onClick={() => setSelectedRecipe({ recipe, mode: "view" })}
                   >
                     <td className="py-3.5 px-4">
                       <span className="text-xs font-medium" style={{ color: "#000" }}>
@@ -193,7 +187,7 @@ const UserRecipeTable: React.FC<Props> = ({ data, currentPage, pageSize = 10 }) 
                               <Check size={14} />
                             </button>
                             <button
-                              onClick={() => recipe._id && handleDecline(recipe._id)}
+                              onClick={() => recipe._id && setSelectedRecipe({ recipe, mode: "decline" })}
                               title="Decline"
                               className="w-8 h-8 rounded-lg flex items-center justify-center bg-orange-50 text-orange-600 hover:bg-orange-100 transition-colors"
                             >
@@ -220,7 +214,8 @@ const UserRecipeTable: React.FC<Props> = ({ data, currentPage, pageSize = 10 }) 
 
       {selectedRecipe && (
         <UserRecipeDetailModal
-          recipe={selectedRecipe}
+          recipe={selectedRecipe.recipe}
+          initialMode={selectedRecipe.mode}
           onClose={() => setSelectedRecipe(null)}
         />
       )}
