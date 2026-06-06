@@ -6,6 +6,7 @@ import { userRecipeApi } from "./services/api/userRecipeApi";
 import { topicApi } from "./services/api/topicApi";
 import { allergyApi } from "./services/api/allergyApi";
 import { dietaryPreferenceApi } from "./services/api/dietaryPreferenceApi";
+import { bookAccessRequestApi } from "./services/api/bookAccessRequestApi";
 
 export const store = configureStore({
   reducer: {
@@ -15,6 +16,7 @@ export const store = configureStore({
     [topicApi.reducerPath]: topicApi.reducer,
     [allergyApi.reducerPath]: allergyApi.reducer,
     [dietaryPreferenceApi.reducerPath]: dietaryPreferenceApi.reducer,
+    [bookAccessRequestApi.reducerPath]: bookAccessRequestApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -24,6 +26,7 @@ export const store = configureStore({
       topicApi.middleware,
       allergyApi.middleware,
       dietaryPreferenceApi.middleware,
+      bookAccessRequestApi.middleware,
     ),
 });
 

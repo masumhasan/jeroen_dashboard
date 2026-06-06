@@ -16,6 +16,7 @@ import {
   ShieldAlert,
   Leaf,
   ChefHat,
+  BookOpen,
 } from "lucide-react";
 import ShowSvg from "@/components/shared/ShowSvg";
 import SideBarLogo from "@/assets/images/SideBarLogo.svg";
@@ -200,6 +201,11 @@ export default function Sidebar({
       label: "User Recipes",
       icon: ChefHat,
       path: "/dashboard/user-recipes",
+    },
+    {
+      label: "Book Access Requests",
+      icon: BookOpen,
+      path: "/dashboard/book-access-requests",
     },
     {
       label: "Allergies Management",
