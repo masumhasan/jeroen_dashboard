@@ -10,7 +10,7 @@ export interface BookAccessRequest {
   bookTitle: string;
   requestEmail: string;
   note: string;
-  status: "pending" | "approved" | "rejected";
+  status: "pending" | "approved" | "rejected" | "revoked";
   adminNote: string | null;
   dismissedAt: string | null;
   createdAt: string;
@@ -62,6 +62,10 @@ export const bookAccessRequestApi = createApi({
       }),
       invalidatesTags: ["BookAccessRequest"],
     }),
+    revokeBookAccessRequest: builder.mutation<{ data: BookAccessRequest }, string>({
+      query: (id) => ({ url: `/book-access-requests/${id}/revoke`, method: "PATCH" }),
+      invalidatesTags: ["BookAccessRequest"],
+    }),
   }),
 });
 
@@ -69,4 +73,5 @@ export const {
   useGetBookAccessRequestsQuery,
   useApproveBookAccessRequestMutation,
   useRejectBookAccessRequestMutation,
+  useRevokeBookAccessRequestMutation,
 } = bookAccessRequestApi;

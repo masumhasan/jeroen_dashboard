@@ -4,22 +4,25 @@ import {
   useGetBookAccessRequestsQuery,
   useApproveBookAccessRequestMutation,
   useRejectBookAccessRequestMutation,
+  useRevokeBookAccessRequestMutation,
   type BookAccessRequest,
 } from "@/services/api/bookAccessRequestApi";
 
-const STATUS_TABS = ["All", "pending", "approved", "rejected"] as const;
+const STATUS_TABS = ["All", "pending", "approved", "rejected", "revoked"] as const;
 type StatusTab = (typeof STATUS_TABS)[number];
 
 const statusLabel: Record<string, string> = {
   pending: "Pending",
   approved: "Approved",
   rejected: "Rejected",
+  revoked: "Revoked",
 };
 
 const statusColors: Record<string, string> = {
   pending: "bg-amber-100 text-amber-800",
   approved: "bg-green-100 text-green-800",
   rejected: "bg-red-100 text-red-800",
+  revoked: "bg-gray-100 text-gray-600",
 };
 
 function formatDate(iso: string) {
@@ -93,6 +96,7 @@ export default function BookAccessRequestsPage() {
 
   const [approve, { isLoading: approving }] = useApproveBookAccessRequestMutation();
   const [reject, { isLoading: rejecting }] = useRejectBookAccessRequestMutation();
+  const [revoke, { isLoading: revoking }] = useRevokeBookAccessRequestMutation();
 
   const handleSearch = (val: string) => {
     setSearch(val);
@@ -112,6 +116,16 @@ export default function BookAccessRequestsPage() {
       toast.success(`Access granted for "${req.bookTitle}"`);
     } catch {
       toast.error("Failed to approve request");
+    }
+  };
+
+  const handleRevoke = async (req: BookAccessRequest) => {
+    if (!window.confirm(`Revoke access to "${req.bookTitle}" for ${req.requestEmail}?`)) return;
+    try {
+      await revoke(req._id).unwrap();
+      toast.success(`Access revoked for "${req.bookTitle}"`);
+    } catch {
+      toast.error("Failed to revoke access");
     }
   };
 
@@ -264,7 +278,16 @@ export default function BookAccessRequestsPage() {
                           </button>
                         </div>
                       )}
-                      {req.status !== "pending" && (
+                      {req.status === "approved" && (
+                        <button
+                          onClick={() => handleRevoke(req)}
+                          disabled={revoking}
+                          className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-orange-100 text-orange-700 hover:bg-orange-200 disabled:opacity-50 transition"
+                        >
+                          Revoke Access
+                        </button>
+                      )}
+                      {(req.status === "rejected" || req.status === "revoked") && (
                         <span className="text-gray-300 text-xs">—</span>
                       )}
                     </td>
