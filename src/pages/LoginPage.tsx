@@ -179,7 +179,7 @@ const LoginPage = () => {
           className="text-center text-[10px] sm:text-xs mt-10"
           style={{ color: "#000" }}
         >
-          Protected by RobbyWork &mdash; All rights reserved
+          Protected by LisaKookt &mdash; All rights reserved
         </p>
       </div>
     </div>
