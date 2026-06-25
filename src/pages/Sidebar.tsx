@@ -17,6 +17,7 @@ import {
   Leaf,
   ChefHat,
   BookOpen,
+  ScrollText,
 } from "lucide-react";
 import ShowSvg from "@/components/shared/ShowSvg";
 import SideBarLogo from "@/assets/images/SideBarLogo.svg";
@@ -191,6 +192,11 @@ export default function Sidebar({
       label: "User Management",
       icon: Users,
       path: "/dashboard/user-management",
+    },
+    {
+      label: "Post Management",
+      icon: ScrollText,
+      path: "/dashboard/post-management",
     },
     {
       label: "Recipe Management",

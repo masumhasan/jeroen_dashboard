@@ -26,6 +26,7 @@ const UsersManagementPage = lazy(() => import("./pages/UserManagementPage"));
 const RecipeManagementPage = lazy(() => import("./pages/RecipeManagementPage"));
 const UserRecipesPage = lazy(() => import("./pages/UserRecipesPage"));
 const BookAccessRequestsPage = lazy(() => import("./pages/BookAccessRequestsPage"));
+const PostManagementPage = lazy(() => import("./pages/PostManagementPage"));
 const TopicManagementPage = lazy(() => import("./pages/TopicManagementPage"));
 const AllergyManagementPage = lazy(() => import("./pages/AllergyManagementPage"));
 const DietaryPreferenceManagementPage = lazy(() => import("./pages/DietaryPreferenceManagementPage"));
@@ -323,6 +324,16 @@ export default function App() {
               <PrivateRoute>
                 <Layout>
                   <UsersManagementPage />
+                </Layout>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/dashboard/post-management"
+            element={
+              <PrivateRoute>
+                <Layout>
+                  <PostManagementPage />
                 </Layout>
               </PrivateRoute>
             }
