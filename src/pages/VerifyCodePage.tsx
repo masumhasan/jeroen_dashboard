@@ -23,7 +23,7 @@ const VerifyCodePage = () => {
     const result = await handleSubmit();
     if (result.success) {
       navigate("/dashboard/set-newpassword", {
-        state: { email, verificationCode: result.otpAsNumber },
+        state: { email, resetToken: result.resetToken },
       });
     }
   };

@@ -1,8 +1,7 @@
 import { useState, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
-
-const DUMMY_OTP = "123456";
+import { API_BASE_URL } from "@/config/apiConfig";
 
 const useVerifyCode = () => {
   const location = useLocation();
@@ -46,7 +45,7 @@ const useVerifyCode = () => {
 
   const handleSubmit = async (): Promise<{
     success: boolean;
-    otpAsNumber?: number;
+    resetToken?: string;
   }> => {
     const codeString = code.join("");
     if (codeString.length !== 6 || code.some((d) => d === "")) {
@@ -55,16 +54,26 @@ const useVerifyCode = () => {
     }
 
     setIsVerifying(true);
-    await new Promise((res) => setTimeout(res, 800));
-
-    if (codeString === DUMMY_OTP) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, otp: codeString }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const msg = json?.message || "Invalid OTP. Please try again.";
+        toast.error(typeof msg === "string" ? msg : "Invalid OTP.");
+        return { success: false };
+      }
       toast.success("OTP verified successfully.");
-      setIsVerifying(false);
-      return { success: true, otpAsNumber: Number(codeString) };
-    } else {
-      toast.error("Invalid OTP. Please try again.");
-      setIsVerifying(false);
+      const resetToken = json?.data?.resetToken || "";
+      return { success: true, resetToken };
+    } catch {
+      toast.error("Network error. Please try again.");
       return { success: false };
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -76,11 +85,26 @@ const useVerifyCode = () => {
     }
 
     setIsResending(true);
-    await new Promise((res) => setTimeout(res, 800));
-    toast.success(`OTP resent to ${email}. Use code: ${DUMMY_OTP}`);
-    setCode(["", "", "", "", "", ""]);
-    inputRefs.current[0]?.focus();
-    setIsResending(false);
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/resend-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const msg = json?.message || "Failed to resend OTP.";
+        toast.error(typeof msg === "string" ? msg : "Failed to resend OTP.");
+        return;
+      }
+      toast.success(`New OTP sent to ${email}.`);
+      setCode(["", "", "", "", "", ""]);
+      inputRefs.current[0]?.focus();
+    } catch {
+      toast.error("Network error. Please try again.");
+    } finally {
+      setIsResending(false);
+    }
   };
 
   return {

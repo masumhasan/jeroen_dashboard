@@ -1,7 +1,6 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
-
-const DUMMY_REGISTERED_EMAIL = "admin@robbywork.com";
+import { API_BASE_URL } from "@/config/apiConfig";
 
 const useForgotPassword = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -18,16 +17,25 @@ const useForgotPassword = () => {
     }
 
     setIsLoading(true);
-    await new Promise((res) => setTimeout(res, 800));
-
-    if (email === DUMMY_REGISTERED_EMAIL) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim().toLowerCase() }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const msg = json?.message || "Failed to send OTP.";
+        toast.error(typeof msg === "string" ? msg : "Failed to send OTP.");
+        return false;
+      }
       toast.success("OTP sent to your email address.");
-      setIsLoading(false);
       return true;
-    } else {
-      toast.error("No account found with this email address.");
-      setIsLoading(false);
+    } catch {
+      toast.error("Network error. Please try again.");
       return false;
+    } finally {
+      setIsLoading(false);
     }
   };
 
