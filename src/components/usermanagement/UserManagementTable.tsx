@@ -46,8 +46,7 @@ const Avatar = ({ name, src }: { name: string; src?: string }) => {
     <div
       className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
       style={{
-        background:
-          "linear-gradient(135deg, rgba(137, 149, 127, 0.2), rgba(137, 149, 127, 0.08))",
+        background: "linear-gradient(135deg, rgba(137, 149, 127, 0.2), rgba(137, 149, 127, 0.08))",
         border: "1px solid rgba(137, 149, 127, 0.25)",
         color: "#000",
       }}
@@ -57,13 +56,7 @@ const Avatar = ({ name, src }: { name: string; src?: string }) => {
   );
 };
 
-const Th = ({
-  children,
-  width,
-}: {
-  children: React.ReactNode;
-  width?: string;
-}) => (
+const Th = ({ children, width }: { children: React.ReactNode; width?: string }) => (
   <th
     className="text-left py-3 px-4 text-[10px] font-bold uppercase tracking-[0.15em] whitespace-nowrap"
     style={{ color: "#000", width }}
@@ -108,25 +101,106 @@ const UserManagementTable: React.FC<UserManagementTableProps> = ({
 
       <div
         className="rounded-2xl overflow-hidden"
-        style={{
-          background: "#fff",
-          border: "1px solid rgba(137, 149, 127, 0.1)",
-        }}
+        style={{ background: "#fff", border: "1px solid rgba(137, 149, 127, 0.1)" }}
       >
         <div
           className="h-[1.5px]"
-          style={{
-            background:
-              "linear-gradient(90deg, transparent, rgba(137, 149, 127, 0.5), transparent)",
-          }}
+          style={{ background: "linear-gradient(90deg, transparent, rgba(137, 149, 127, 0.5), transparent)" }}
         />
 
-        <div className="overflow-x-auto">
+        {/* ── Mobile card list ── */}
+        <div className="sm:hidden divide-y" style={{ borderColor: "rgba(137,149,127,0.08)" }}>
+          {data.length === 0 ? (
+            <p className="py-16 text-center text-sm text-gray-400">No users found.</p>
+          ) : (
+            data.map((user, index) => {
+              const globalIndex = (currentPage - 1) * pageSize + index;
+              const uid = String(user.id);
+              const canDelete = canDashboardStaffDeleteUser(viewerRole, viewerUserId, user);
+              const effectiveRole = roleDrafts[uid] !== undefined ? roleDrafts[uid]! : user.role;
+              const dirty = effectiveRole !== user.role;
+
+              return (
+                <div key={user.id} className="p-4 space-y-3">
+                  {/* Row 1: avatar + name/email + delete */}
+                  <div className="flex items-center gap-3">
+                    <Avatar name={user.name} src={user.avatar} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-black truncate">
+                        <span className="text-gray-400 text-xs mr-1">#{globalIndex + 1}</span>
+                        {user.name}
+                      </p>
+                      <p className="text-[11px] text-gray-500 truncate">{user.email}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => canDelete && onAction(user, "delete")}
+                      disabled={!canDelete}
+                      className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 disabled:opacity-40 disabled:pointer-events-none"
+                      style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}
+                      title={canDelete ? "Delete user" : "Cannot delete this account"}
+                    >
+                      <Trash2 size={15} style={{ color: "#ef4444" }} />
+                    </button>
+                  </div>
+
+                  {/* Row 2: phone + joined */}
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-wide text-gray-400">Phone</p>
+                      <p className="text-black font-medium mt-0.5">{user.phone || "—"}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-wide text-gray-400">Joined</p>
+                      <p className="text-black font-medium mt-0.5">{user.joined}</p>
+                    </div>
+                  </div>
+
+                  {/* Row 3: role */}
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-wide text-gray-400 mb-1">Role</p>
+                    {canManageRoles ? (
+                      <div className="flex items-center gap-2">
+                        <select
+                          className="flex-1 text-sm rounded-lg border px-2 py-1.5 bg-white"
+                          style={{ borderColor: "rgba(137,149,127,0.35)" }}
+                          value={effectiveRole}
+                          onChange={(e) => onRoleDraftChange(uid, e.target.value as DashboardUserRole)}
+                          disabled={savingUserId === uid}
+                        >
+                          {roleOptions.map((r) => (
+                            <option key={r} value={r}>
+                              {r.charAt(0).toUpperCase() + r.slice(1)}
+                            </option>
+                          ))}
+                        </select>
+                        {dirty && (
+                          <button
+                            type="button"
+                            onClick={() => onSaveRole(uid)}
+                            disabled={savingUserId === uid}
+                            className="text-xs font-semibold px-3 py-1.5 rounded-lg text-white shrink-0 disabled:opacity-50"
+                            style={{ background: "#89957F" }}
+                          >
+                            {savingUserId === uid ? "…" : "Save"}
+                          </button>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-sm capitalize text-black">{user.role}</p>
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* ── Desktop table ── */}
+        <div className="hidden sm:block overflow-x-auto">
           <table className="w-full border-collapse">
             <thead>
-              <tr
-                style={{ borderBottom: "1px solid rgba(137, 149, 127, 0.08)" }}
-              >
+              <tr style={{ borderBottom: "1px solid rgba(137, 149, 127, 0.08)" }}>
                 <Th width="48px">#</Th>
                 <Th width="220px">User</Th>
                 <Th>Phone Number</Th>
@@ -138,11 +212,7 @@ const UserManagementTable: React.FC<UserManagementTableProps> = ({
             <tbody>
               {data.length === 0 ? (
                 <tr>
-                  <td
-                    colSpan={6}
-                    className="py-16 text-center text-sm"
-                    style={{ color: "#000" }}
-                  >
+                  <td colSpan={6} className="py-16 text-center text-sm" style={{ color: "#000" }}>
                     No users found.
                   </td>
                 </tr>
@@ -150,71 +220,36 @@ const UserManagementTable: React.FC<UserManagementTableProps> = ({
                 data.map((user, index) => {
                   const globalIndex = (currentPage - 1) * pageSize + index;
                   const uid = String(user.id);
-                  const canDelete = canDashboardStaffDeleteUser(
-                    viewerRole,
-                    viewerUserId,
-                    user,
-                  );
-                  const effectiveRole =
-                    roleDrafts[uid] !== undefined ? roleDrafts[uid]! : user.role;
+                  const canDelete = canDashboardStaffDeleteUser(viewerRole, viewerUserId, user);
+                  const effectiveRole = roleDrafts[uid] !== undefined ? roleDrafts[uid]! : user.role;
                   const dirty = effectiveRole !== user.role;
 
                   return (
                     <tr
                       key={user.id}
                       className="transition-colors duration-150"
-                      style={{
-                        borderBottom: "1px solid rgba(137, 149, 127, 0.06)",
-                      }}
-                      onMouseEnter={(e) => {
-                        (
-                          e.currentTarget as HTMLTableRowElement
-                        ).style.background = "rgba(137, 149, 127, 0.05)";
-                      }}
-                      onMouseLeave={(e) => {
-                        (
-                          e.currentTarget as HTMLTableRowElement
-                        ).style.background = "transparent";
-                      }}
+                      style={{ borderBottom: "1px solid rgba(137, 149, 127, 0.06)" }}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLTableRowElement).style.background = "rgba(137, 149, 127, 0.05)"; }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLTableRowElement).style.background = "transparent"; }}
                     >
                       <td className="py-3.5 px-4">
-                        <span
-                          className="text-xs font-medium"
-                          style={{ color: "#000" }}
-                        >
-                          {globalIndex + 1}
-                        </span>
+                        <span className="text-xs font-medium" style={{ color: "#000" }}>{globalIndex + 1}</span>
                       </td>
-
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-3">
                           <Avatar name={user.name} src={user.avatar} />
                           <div className="min-w-0">
-                            <p className="text-sm font-semibold text-black truncate">
-                              {user.name}
-                            </p>
-                            <p
-                              className="text-[11px] truncate"
-                              style={{ color: "#555" }}
-                            >
-                              {user.email}
-                            </p>
+                            <p className="text-sm font-semibold text-black truncate">{user.name}</p>
+                            <p className="text-[11px] truncate" style={{ color: "#555" }}>{user.email}</p>
                           </div>
                         </div>
                       </td>
-
                       <td className="py-3.5 px-4">
-                        <span className="text-sm" style={{ color: "#000" }}>
-                          {user.phone}
-                        </span>
+                        <span className="text-sm" style={{ color: "#000" }}>{user.phone}</span>
                       </td>
-
                       <td className="py-3.5 px-4">
-                        <span className="text-sm tabular-nums" style={{ color: "#000" }}>
-                          {user.joined}
-                        </span>
+                        <span className="text-sm tabular-nums" style={{ color: "#000" }}>{user.joined}</span>
                       </td>
-
                       <td className="py-3.5 px-4">
                         {canManageRoles ? (
                           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -222,21 +257,14 @@ const UserManagementTable: React.FC<UserManagementTableProps> = ({
                               className="text-sm rounded-lg border border-gray-200 px-2 py-1.5 bg-white min-w-[160px]"
                               style={{ borderColor: "rgba(137,149,127,0.35)" }}
                               value={effectiveRole}
-                              onChange={(e) =>
-                                onRoleDraftChange(
-                                  uid,
-                                  e.target.value as DashboardUserRole
-                                )
-                              }
+                              onChange={(e) => onRoleDraftChange(uid, e.target.value as DashboardUserRole)}
                               disabled={savingUserId === uid}
                             >
                               {roleOptions.map((r) => (
-                                <option key={r} value={r}>
-                                  {r.charAt(0).toUpperCase() + r.slice(1)}
-                                </option>
+                                <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>
                               ))}
                             </select>
-                            {dirty ? (
+                            {dirty && (
                               <button
                                 type="button"
                                 onClick={() => onSaveRole(uid)}
@@ -246,39 +274,22 @@ const UserManagementTable: React.FC<UserManagementTableProps> = ({
                               >
                                 {savingUserId === uid ? "…" : "Update"}
                               </button>
-                            ) : null}
+                            )}
                           </div>
                         ) : (
-                          <span className="text-sm capitalize" style={{ color: "#000" }}>
-                            {user.role}
-                          </span>
+                          <span className="text-sm capitalize" style={{ color: "#000" }}>{user.role}</span>
                         )}
                       </td>
-
                       <td className="py-3.5 px-4">
                         <button
                           type="button"
                           onClick={() => canDelete && onAction(user, "delete")}
                           disabled={!canDelete}
-                          title={
-                            canDelete
-                              ? "Delete user"
-                              : "You cannot delete this account"
-                          }
+                          title={canDelete ? "Delete user" : "You cannot delete this account"}
                           className="w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200 hover:scale-110 disabled:opacity-40 disabled:pointer-events-none disabled:hover:scale-100"
-                          style={{
-                            background: "rgba(239,68,68,0.08)",
-                            border: "1px solid rgba(239,68,68,0.2)",
-                          }}
-                          onMouseEnter={(e) => {
-                            if (!canDelete) return;
-                            e.currentTarget.style.background =
-                              "rgba(239,68,68,0.18)";
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.background =
-                              "rgba(239,68,68,0.08)";
-                          }}
+                          style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)" }}
+                          onMouseEnter={(e) => { if (!canDelete) return; e.currentTarget.style.background = "rgba(239,68,68,0.18)"; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.08)"; }}
                         >
                           <Trash2 size={15} style={{ color: "#ef4444" }} />
                         </button>

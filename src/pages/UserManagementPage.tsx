@@ -121,7 +121,7 @@ export default function UserManagementPage() {
   if (isLoading) return <UserManagementSkeleton />;
 
   return (
-    <div className="min-h-screen p-6 space-y-5" style={{ background: "#fff" }}>
+    <div className="min-h-screen p-3 sm:p-6 space-y-5" style={{ background: "#fff" }}>
       {isOverlayOpen && (
         <UserSearchOverlay
           search={overlaySearch}

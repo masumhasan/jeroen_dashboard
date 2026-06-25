@@ -145,7 +145,7 @@ export default function BookAccessRequestsPage() {
   const totalResults = data?.totalResults ?? 0;
 
   return (
-    <div className="min-h-screen p-6 space-y-5" style={{ background: "#fff" }}>
+    <div className="min-h-screen p-3 sm:p-6 space-y-5" style={{ background: "#fff" }}>
       {/* Header */}
       <div>
         <h1 className="text-xl font-black tracking-tight text-black">
@@ -205,97 +205,145 @@ export default function BookAccessRequestsPage() {
             No requests found.
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-2xl border border-gray-100">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-gray-100 bg-gray-50 text-left">
-                  <th className="px-5 py-3.5 font-semibold text-gray-600 whitespace-nowrap">Date</th>
-                  <th className="px-5 py-3.5 font-semibold text-gray-600 whitespace-nowrap">Account</th>
-                  <th className="px-5 py-3.5 font-semibold text-gray-600 whitespace-nowrap">Request Email</th>
-                  <th className="px-5 py-3.5 font-semibold text-gray-600 whitespace-nowrap">Book</th>
-                  <th className="px-5 py-3.5 font-semibold text-gray-600 whitespace-nowrap">Note</th>
-                  <th className="px-5 py-3.5 font-semibold text-gray-600 whitespace-nowrap">Status</th>
-                  <th className="px-5 py-3.5 font-semibold text-gray-600 whitespace-nowrap">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {requests.map((req) => (
-                  <tr key={req._id} className="hover:bg-gray-50/60 transition">
-                    <td className="px-5 py-4 text-gray-500 whitespace-nowrap">
-                      {formatDate(req.createdAt)}
-                    </td>
-                    <td className="px-5 py-4">
-                      {req.userId ? (
-                        <div>
-                          <p className="font-medium text-gray-800">
-                            {req.userId.firstName} {req.userId.lastName}
-                          </p>
-                          <p className="text-gray-400 text-xs">{req.userId.email}</p>
-                        </div>
-                      ) : (
-                        <span className="text-gray-400">—</span>
-                      )}
-                    </td>
-                    <td className="px-5 py-4 text-gray-700">{req.requestEmail}</td>
-                    <td className="px-5 py-4">
-                      <div>
-                        <p className="font-medium text-gray-800">{req.bookTitle}</p>
-                        <p className="text-gray-400 text-xs font-mono">{req.bookSku}</p>
-                      </div>
-                    </td>
-                    <td className="px-5 py-4 max-w-[240px]">
-                      <p className="text-gray-600 text-sm leading-relaxed line-clamp-3">
-                        {req.note || <span className="text-gray-300 italic">No note</span>}
-                      </p>
-                      {req.adminNote && (
-                        <p className="text-red-500 text-xs mt-1 italic">
-                          Admin note: {req.adminNote}
-                        </p>
-                      )}
-                    </td>
-                    <td className="px-5 py-4">
-                      <span
-                        className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold capitalize ${statusColors[req.status] ?? ""}`}
-                      >
-                        {req.status}
-                      </span>
-                    </td>
-                    <td className="px-5 py-4 whitespace-nowrap">
-                      {req.status === "pending" && (
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleApprove(req)}
-                            disabled={approving}
-                            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-green-100 text-green-700 hover:bg-green-200 disabled:opacity-50 transition"
-                          >
-                            Approve
-                          </button>
-                          <button
-                            onClick={() => setRejectTarget(req)}
-                            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-100 text-red-700 hover:bg-red-200 transition"
-                          >
-                            Reject
-                          </button>
-                        </div>
-                      )}
-                      {req.status === "approved" && (
-                        <button
-                          onClick={() => handleRevoke(req)}
-                          disabled={revoking}
-                          className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-orange-100 text-orange-700 hover:bg-orange-200 disabled:opacity-50 transition"
-                        >
-                          Revoke Access
-                        </button>
-                      )}
-                      {(req.status === "rejected" || req.status === "revoked") && (
-                        <span className="text-gray-300 text-xs">—</span>
-                      )}
-                    </td>
+          <>
+            {/* Mobile cards */}
+            <div className="sm:hidden space-y-3">
+              {requests.map((req) => (
+                <div key={req._id} className="rounded-2xl border border-gray-100 p-4 space-y-3">
+                  {/* Row 1: book title + status + date */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-gray-800 leading-snug">{req.bookTitle}</p>
+                      {req.bookSku && <p className="text-[10px] text-gray-400 font-mono mt-0.5">{req.bookSku}</p>}
+                    </div>
+                    <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold capitalize shrink-0 ${statusColors[req.status] ?? ""}`}>
+                      {req.status}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-gray-400">{formatDate(req.createdAt)}</p>
+
+                  {/* Row 2: account */}
+                  {req.userId && (
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-wide text-gray-400">Account</p>
+                      <p className="text-sm font-medium text-gray-800 mt-0.5">{req.userId.firstName} {req.userId.lastName}</p>
+                      <p className="text-xs text-gray-400">{req.userId.email}</p>
+                    </div>
+                  )}
+
+                  {/* Row 3: request email */}
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-wide text-gray-400">Request Email</p>
+                    <p className="text-sm text-gray-700 mt-0.5">{req.requestEmail}</p>
+                  </div>
+
+                  {/* Row 4: note */}
+                  {(req.note || req.adminNote) && (
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-wide text-gray-400">Note</p>
+                      {req.note && <p className="text-sm text-gray-600 mt-0.5 line-clamp-3">{req.note}</p>}
+                      {req.adminNote && <p className="text-xs text-red-500 mt-1 italic">Admin: {req.adminNote}</p>}
+                    </div>
+                  )}
+
+                  {/* Actions */}
+                  {req.status === "pending" && (
+                    <div className="flex gap-2 pt-1">
+                      <button onClick={() => handleApprove(req)} disabled={approving}
+                        className="flex-1 py-2 rounded-xl text-xs font-semibold bg-green-100 text-green-700 disabled:opacity-50">
+                        Approve
+                      </button>
+                      <button onClick={() => setRejectTarget(req)}
+                        className="flex-1 py-2 rounded-xl text-xs font-semibold bg-red-100 text-red-700">
+                        Reject
+                      </button>
+                    </div>
+                  )}
+                  {req.status === "approved" && (
+                    <button onClick={() => handleRevoke(req)} disabled={revoking}
+                      className="w-full py-2 rounded-xl text-xs font-semibold bg-orange-100 text-orange-700 disabled:opacity-50">
+                      Revoke Access
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop table */}
+            <div className="hidden sm:block overflow-x-auto rounded-2xl border border-gray-100">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-100 bg-gray-50 text-left">
+                    <th className="px-5 py-3.5 font-semibold text-gray-600 whitespace-nowrap">Date</th>
+                    <th className="px-5 py-3.5 font-semibold text-gray-600 whitespace-nowrap">Account</th>
+                    <th className="px-5 py-3.5 font-semibold text-gray-600 whitespace-nowrap">Request Email</th>
+                    <th className="px-5 py-3.5 font-semibold text-gray-600 whitespace-nowrap">Book</th>
+                    <th className="px-5 py-3.5 font-semibold text-gray-600 whitespace-nowrap">Note</th>
+                    <th className="px-5 py-3.5 font-semibold text-gray-600 whitespace-nowrap">Status</th>
+                    <th className="px-5 py-3.5 font-semibold text-gray-600 whitespace-nowrap">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {requests.map((req) => (
+                    <tr key={req._id} className="hover:bg-gray-50/60 transition">
+                      <td className="px-5 py-4 text-gray-500 whitespace-nowrap">{formatDate(req.createdAt)}</td>
+                      <td className="px-5 py-4">
+                        {req.userId ? (
+                          <div>
+                            <p className="font-medium text-gray-800">{req.userId.firstName} {req.userId.lastName}</p>
+                            <p className="text-gray-400 text-xs">{req.userId.email}</p>
+                          </div>
+                        ) : (
+                          <span className="text-gray-400">—</span>
+                        )}
+                      </td>
+                      <td className="px-5 py-4 text-gray-700">{req.requestEmail}</td>
+                      <td className="px-5 py-4">
+                        <div>
+                          <p className="font-medium text-gray-800">{req.bookTitle}</p>
+                          <p className="text-gray-400 text-xs font-mono">{req.bookSku}</p>
+                        </div>
+                      </td>
+                      <td className="px-5 py-4 max-w-[240px]">
+                        <p className="text-gray-600 text-sm leading-relaxed line-clamp-3">
+                          {req.note || <span className="text-gray-300 italic">No note</span>}
+                        </p>
+                        {req.adminNote && <p className="text-red-500 text-xs mt-1 italic">Admin note: {req.adminNote}</p>}
+                      </td>
+                      <td className="px-5 py-4">
+                        <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold capitalize ${statusColors[req.status] ?? ""}`}>
+                          {req.status}
+                        </span>
+                      </td>
+                      <td className="px-5 py-4 whitespace-nowrap">
+                        {req.status === "pending" && (
+                          <div className="flex gap-2">
+                            <button onClick={() => handleApprove(req)} disabled={approving}
+                              className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-green-100 text-green-700 hover:bg-green-200 disabled:opacity-50 transition">
+                              Approve
+                            </button>
+                            <button onClick={() => setRejectTarget(req)}
+                              className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-100 text-red-700 hover:bg-red-200 transition">
+                              Reject
+                            </button>
+                          </div>
+                        )}
+                        {req.status === "approved" && (
+                          <button onClick={() => handleRevoke(req)} disabled={revoking}
+                            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-orange-100 text-orange-700 hover:bg-orange-200 disabled:opacity-50 transition">
+                            Revoke Access
+                          </button>
+                        )}
+                        {(req.status === "rejected" || req.status === "revoked") && (
+                          <span className="text-gray-300 text-xs">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
 

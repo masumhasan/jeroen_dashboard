@@ -25,6 +25,7 @@ import useLogout from "@/services/hooks/useLogout";
 interface SidebarProps {
   sidebarVisible?: boolean;
   setsidebarVisible?: (val: boolean) => void;
+  isMobile?: boolean;
 }
 
 interface NavItemProps {
@@ -165,8 +166,10 @@ const SubNavItem = ({
 export default function Sidebar({
   sidebarVisible = true,
   setsidebarVisible,
+  isMobile = false,
 }: SidebarProps) {
-  const collapsed = !sidebarVisible;
+  // On mobile, sidebar is never "collapsed" — it's either open (full) or hidden off-screen
+  const collapsed = isMobile ? false : !sidebarVisible;
   const navigate = useNavigate();
   const location = useLocation();
   const { handleLogout, isLoading: isLoggingOut } = useLogout();
@@ -174,9 +177,19 @@ export default function Sidebar({
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const toggle = () => {
+    if (isMobile) {
+      // On mobile, the toggle button closes the drawer
+      setsidebarVisible?.(false);
+      return;
+    }
     const next = !sidebarVisible;
     setsidebarVisible?.(next);
     if (!next) setSettingsOpen(false);
+  };
+
+  // Close sidebar when navigating on mobile
+  const handleNavClick = () => {
+    if (isMobile) setsidebarVisible?.(false);
   };
 
   const onLogout = async () => {
@@ -251,9 +264,12 @@ export default function Sidebar({
     <>
       <aside
         style={{
-          width: collapsed ? "80px" : "288px",
+          width: isMobile ? "280px" : collapsed ? "80px" : "288px",
           background: "#ffffff",
           borderRight: "1px solid rgba(0,0,0,0.08)",
+          transform: isMobile
+            ? sidebarVisible ? "translateX(0)" : "translateX(-100%)"
+            : "none",
         }}
         className="fixed top-0 left-0 h-screen flex flex-col transition-all duration-300 z-50 overflow-hidden"
       >
@@ -312,6 +328,7 @@ export default function Sidebar({
                 path={path}
                 collapsed={collapsed}
                 active={location.pathname === path}
+                onClick={handleNavClick}
               />
             ))}
           </ul>
@@ -402,6 +419,7 @@ export default function Sidebar({
                         label={label}
                         path={path}
                         active={location.pathname === path}
+                        onClick={handleNavClick}
                       />
                     ))}
                   </div>

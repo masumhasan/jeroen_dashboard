@@ -44,7 +44,7 @@ export default function PremiumUsersPage() {
 
   return (
     <div
-      className="min-h-screen p-6 space-y-5"
+      className="min-h-screen p-3 sm:p-6 space-y-5"
       style={{ background: "#fff" }}
     >
       {/* ─── Search Overlay ───────────────────────────────────── */}

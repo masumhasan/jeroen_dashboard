@@ -42,7 +42,7 @@ export default function DietaryPreferenceManagementPage() {
   };
 
   return (
-    <div className="min-h-screen p-6 space-y-5" style={{ background: "#fff" }}>
+    <div className="min-h-screen p-3 sm:p-6 space-y-5" style={{ background: "#fff" }}>
       <div>
         <h1 className="text-xl font-black tracking-tight text-black">Dietary Preference Management</h1>
         <p className="text-[11px] mt-0.5 font-medium uppercase tracking-[0.15em] text-black">
@@ -94,6 +94,42 @@ export default function DietaryPreferenceManagementPage() {
       />
 
       <div className={`rounded-2xl border border-gray-100 overflow-hidden ${isFetching ? "opacity-60" : ""}`}>
+        {/* Mobile cards */}
+        <div className="sm:hidden divide-y divide-gray-100">
+          {isLoading ? (
+            <p className="px-4 py-6 text-sm text-gray-400">Loading...</p>
+          ) : items.length === 0 ? (
+            <p className="px-4 py-6 text-sm text-gray-400">No dietary preferences found.</p>
+          ) : (
+            items.map((item) => (
+              <div key={item._id} className="px-4 py-3 flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-black">{item.name}</p>
+                  {item.description && (
+                    <p className="text-[12px] text-gray-500 mt-0.5">{item.description}</p>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => { setEditingId(item._id); setName(item.name || ""); setDescription(item.description || ""); }}
+                    className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50"
+                  >
+                    <Edit2 size={14} />
+                  </button>
+                  <button
+                    onClick={() => deleteItem(item._id)}
+                    disabled={isDeleting}
+                    className="p-2 rounded-lg border border-red-100 text-red-600 hover:bg-red-50 disabled:opacity-50"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+        {/* Desktop table */}
+        <div className="hidden sm:block overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-gray-50">
             <tr>
@@ -115,11 +151,7 @@ export default function DietaryPreferenceManagementPage() {
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-2">
                       <button
-                        onClick={() => {
-                          setEditingId(item._id);
-                          setName(item.name || "");
-                          setDescription(item.description || "");
-                        }}
+                        onClick={() => { setEditingId(item._id); setName(item.name || ""); setDescription(item.description || ""); }}
                         className="px-2.5 py-2 rounded-lg border border-gray-200 hover:bg-gray-50"
                         title="Edit"
                       >
@@ -140,6 +172,7 @@ export default function DietaryPreferenceManagementPage() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );

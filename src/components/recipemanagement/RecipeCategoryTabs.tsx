@@ -9,7 +9,7 @@ const categories = ["All", "Ontbijt", "Lunch", "Diner", "Snack", "Dranken", "Unc
 
 const RecipeCategoryTabs: React.FC<RecipeCategoryTabsProps> = ({ active, onChange }) => {
   return (
-    <div className="flex bg-[#F3F4F6] p-1 rounded-xl">
+    <div className="flex bg-[#F3F4F6] p-1 rounded-xl overflow-x-auto no-scrollbar w-full sm:w-auto">
       {categories.map((cat) => {
         const isActive = active === cat;
         return (

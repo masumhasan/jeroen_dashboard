@@ -63,7 +63,7 @@ export default function TopicManagementPage() {
   };
 
   return (
-    <div className="min-h-screen p-6 space-y-5" style={{ background: "#fff" }}>
+    <div className="min-h-screen p-3 sm:p-6 space-y-5" style={{ background: "#fff" }}>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-black tracking-tight text-black">Topic Management</h1>
@@ -153,6 +153,49 @@ export default function TopicManagementPage() {
       </div>
 
       <div className={`rounded-2xl border border-gray-100 overflow-hidden ${isFetching ? "opacity-60" : ""}`}>
+        {/* Mobile cards */}
+        <div className="sm:hidden divide-y divide-gray-100">
+          {isLoading ? (
+            <p className="px-4 py-6 text-sm text-gray-400">Loading topics...</p>
+          ) : topics.length === 0 ? (
+            <p className="px-4 py-6 text-sm text-gray-400">No topics found.</p>
+          ) : (
+            topics.map((topic) => (
+              <div key={topic._id} className="px-4 py-3 space-y-1.5">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span
+                      className="inline-block w-3 h-3 rounded-full border border-gray-200 shrink-0"
+                      style={{ background: topic.color || "#89957F" }}
+                    />
+                    <p className="text-sm font-bold text-black truncate">{topic.name}</p>
+                    <span className="text-[11px] text-gray-400 shrink-0">{topic.followerCount || 0} followers</span>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      onClick={() => { setEditingId(topic._id); setName(topic.name || ""); setDescription(topic.description || ""); setColor(topic.color || "#89957F"); }}
+                      className="p-2 rounded-lg border border-gray-200 hover:bg-gray-50"
+                    >
+                      <Edit2 size={14} />
+                    </button>
+                    <button
+                      onClick={() => deleteTopic(topic._id)}
+                      disabled={isDeleting}
+                      className="p-2 rounded-lg border border-red-100 text-red-600 hover:bg-red-50 disabled:opacity-50"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
+                {topic.description && (
+                  <p className="text-[12px] text-gray-500 pl-5">{topic.description}</p>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+        {/* Desktop table */}
+        <div className="hidden sm:block overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-gray-50">
             <tr>
@@ -190,12 +233,7 @@ export default function TopicManagementPage() {
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-2">
                       <button
-                        onClick={() => {
-                          setEditingId(topic._id);
-                          setName(topic.name || "");
-                          setDescription(topic.description || "");
-                          setColor(topic.color || "#89957F");
-                        }}
+                        onClick={() => { setEditingId(topic._id); setName(topic.name || ""); setDescription(topic.description || ""); setColor(topic.color || "#89957F"); }}
                         className="px-2.5 py-2 rounded-lg border border-gray-200 hover:bg-gray-50"
                         title="Edit topic"
                       >
@@ -216,6 +254,7 @@ export default function TopicManagementPage() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );
