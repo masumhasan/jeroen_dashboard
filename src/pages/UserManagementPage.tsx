@@ -56,7 +56,6 @@ export default function UserManagementPage() {
     isLoading,
     isFetching,
     isError,
-    error,
     search,
     currentPage,
     totalPages,
