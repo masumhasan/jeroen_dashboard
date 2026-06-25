@@ -14,8 +14,6 @@ const ForgotPasswordPage = lazy(() => import("./pages/ForgetPasswordPage"));
 const VerifyCodePage = lazy(() => import("./pages/VerifyCodePage"));
 const SetNewPasswordPage = lazy(() => import("./pages/SetNetPassword"));
 const Layout = lazy(() => import("./pages/Layout"));
-const OverViewPage = lazy(() => import("./pages/OverViewPage"));
-const EditProfilePage = lazy(() => import("./pages/EditProfilePage"));
 const AboutUsPage = lazy(() => import("./pages/AboutUsPage"));
 const PrivacyPolicyPage = lazy(() => import("./pages/PrivacyPolicyPage"));
 const TermsAndConditionsPage = lazy(
@@ -45,7 +43,7 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
 
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   return getToken() ? (
-    <Navigate to="/dashboard/overview" replace />
+    <Navigate to="/dashboard/user-management" replace />
   ) : (
     <>{children}</>
   );
@@ -258,26 +256,6 @@ export default function App() {
             }
           />
 
-          <Route
-            path="/dashboard/overview"
-            element={
-              <PrivateRoute>
-                <Layout>
-                  <OverViewPage />
-                </Layout>
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/dashboard/edit-profile"
-            element={
-              <PrivateRoute>
-                <Layout>
-                  <EditProfilePage />
-                </Layout>
-              </PrivateRoute>
-            }
-          />
           <Route
             path="/dashboard/about-us"
             element={

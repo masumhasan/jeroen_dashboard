@@ -1,6 +1,5 @@
 import { useState } from "react";
 import {
-  LayoutDashboard,
   Users,
   Settings,
   Info,
@@ -10,7 +9,6 @@ import {
   Menu,
   Inbox,
   ChevronRight,
-  UserCircle,
   Utensils,
   Tags,
   ShieldAlert,
@@ -187,7 +185,6 @@ export default function Sidebar({
   };
 
   const mainNav = [
-    { label: "Overview", icon: LayoutDashboard, path: "/dashboard/overview" },
     {
       label: "User Management",
       icon: Users,
@@ -232,11 +229,6 @@ export default function Sidebar({
   ];
 
   const settingsNav = [
-    {
-      label: "Edit Profile",
-      icon: UserCircle,
-      path: "/dashboard/edit-profile",
-    },
     { label: "About Us", icon: Info, path: "/dashboard/about-us" },
     {
       label: "Privacy Policy",
