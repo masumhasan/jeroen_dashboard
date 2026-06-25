@@ -29,8 +29,8 @@ export default function InboxPage() {
   // Mobile: track which panel is visible
   const [mobilePanel, setMobilePanel] = useState<"contacts" | "chat">("contacts");
 
-  const handleSelectContact = (id: string) => {
-    selectContact(id);
+  const handleSelectContact = (id: string | number) => {
+    selectContact(String(id));
     setMobilePanel("chat");
   };
 
